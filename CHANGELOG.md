@@ -5,6 +5,12 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.27.2
+
+- Quest Log: every zone is expanded when the log opens instead of all
+  collapsed, and collapsing zones there no longer affects the world map's
+  quest list (or the other way round).
+
 ## 1.27.1
 
 - Character Window (WoW Forever only): the level line under the title no
