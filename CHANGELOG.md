@@ -5,6 +5,12 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.27.1
+
+- Character Window (WoW Forever only): the level line under the title no
+  longer shows twice since the latest client update; the pet page and the
+  inspect window show their level line in the classic small font again.
+
 ## 1.27.0
 
 - New Social Window option (WoW Forever only): the classic friends list
