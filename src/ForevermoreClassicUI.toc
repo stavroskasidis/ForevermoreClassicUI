@@ -45,6 +45,7 @@ Modules\CharacterSkills.lua
 Modules\CharacterInspect.lua
 Modules\ProfessionsFrame.lua
 Modules\GroupFinder.lua
+Modules\SocialFrame.lua
 Modules\Forever.lua
 Previews.lua
 PreviewsForever.lua

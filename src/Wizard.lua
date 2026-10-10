@@ -50,8 +50,8 @@ local GROUPS = {
 		keys = { "minimap", "groupfindereye" } },
 	{ title = "Your Character", text = "Your character window, spellbook, talents, quest log and the quests you track.",
 		keys = { "characterframe", "spellbook", "talents", "questlog", "questtracker" } },
-	{ title = "Out in the World", text = "Looting and rolling on loot, training, the bank, finding a group, and the vendor, mail, quest and other windows.",
-		keys = { "lootframe", "lootroll", "windows", "trainer", "bank", "lfgframe" } },
+	{ title = "Out in the World", text = "Looting and rolling on loot, training, the bank, finding a group, your friends, and the vendor, mail, quest and other windows.",
+		keys = { "lootframe", "lootroll", "windows", "trainer", "bank", "lfgframe", "socialframe" } },
 	{ title = "Trade", text = "The auction house and your professions.",
 		keys = { "auctionhouse", "professions" } },
 }
@@ -81,6 +81,7 @@ local SUMMARIES = {
 	windows = "The pre-Dragonflight metal frame, round close button and classic tabs on the vendor, mail, quest, trade and other windows.",
 	trainer = "The vanilla trainer window with the colour-coded skill list.",
 	lfgframe = "The classic Looking For Group window: the LFG panel with the eye in its ring, the classic role icons and the tabs under it.",
+	socialframe = "The classic social window: the friends list frame with the Battle.net bar in its stone band and the tabs under it.",
 	bank = "The vanilla bank window: the stone panel with its riveted slot wells, the bag slot row and the money bar.",
 	auctionhouse = "The vanilla auction house: the classic panel, filter column and Bid / Buyout buttons.",
 	professions = "The vanilla trade skill window: the rank bar, the compact recipe list and the reagents below it.",
@@ -140,6 +141,7 @@ end
 local WINDOWS = {
 	gamemenu = true, characterframe = true, spellbook = true, talents = true, questlog = true, lootframe = true, lootroll = true,
 	windows = true, trainer = true, auctionhouse = true, professions = true, lfgframe = true,
+	socialframe = true,
 }
 
 function UI.IsWindow(module)

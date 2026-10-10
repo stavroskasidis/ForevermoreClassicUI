@@ -598,7 +598,11 @@ end
 ---------------------------------------------------------------------------
 
 -- MinimalScrollBar's steppers swap atlases on their own Texture from their
--- mixin; that texture is faded and a classic arrow drawn over it.
+-- mixin; that texture is faded and a classic arrow drawn over it. The arrow
+-- files are 32x32 with the arrow in their middle; the 16x16 classic button
+-- (UIPanelScrollUpButtonTemplate) showed that middle only.
+local STEPPER_COORDS = { 0.2, 0.8, 0.25, 0.75 }
+
 local function SkinStepper(button, prefix)
 	if not button then return end
 	if button.Texture then button.Texture:SetAlpha(0) end
@@ -606,13 +610,8 @@ local function SkinStepper(button, prefix)
 	local texture = button:CreateTexture(nil, "ARTWORK")
 	texture:SetAllPoints(button)
 	local function Update(pushed)
-		if not button:IsEnabled() then
-			ns.SetTexture(texture, prefix .. "Disabled")
-		elseif pushed then
-			ns.SetTexture(texture, prefix .. "Down")
-		else
-			ns.SetTexture(texture, prefix .. "Up")
-		end
+		local state = not button:IsEnabled() and "Disabled" or pushed and "Down" or "Up"
+		ns.SetTexture(texture, prefix .. state, unpack(STEPPER_COORDS))
 	end
 	button:HookScript("OnMouseDown", function() Update(true) end)
 	button:HookScript("OnMouseUp", function() Update(false) end)
@@ -620,6 +619,8 @@ local function SkinStepper(button, prefix)
 	button:HookScript("OnDisable", function() Update(false) end)
 	if ns.HasTexture(prefix .. "Highlight") then
 		button:SetHighlightTexture(prefix .. "Highlight", "ADD")
+		local highlight = button:GetHighlightTexture()
+		if highlight then highlight:SetTexCoord(unpack(STEPPER_COORDS)) end
 	end
 	Update(false)
 end

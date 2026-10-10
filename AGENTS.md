@@ -79,6 +79,8 @@ src/                    the addon folder, one build for every flavor (copied as 
   Modules/ProfessionsFrame.lua vanilla trade skill window, Forever only (reload; crafting page re-skinned in place, Blizzard's recipe list scaled with its row heights overridden (not with the controller UI on), own detail pane / rank bar / "All" tab / proxy create buttons)
   Modules/GroupFinder.lua classic Looking For Group window, Forever only (reload; Blizzard_GroupFinder_VanillaStyle's Mainline
                            frame sized to Classic Era's UI-LFG-FRAME art, pages / lists re-anchored, side tabs as bottom tabs)
+  Modules/SocialFrame.lua classic social window, Forever only (reload; Blizzard_SocialUI's SocialUIFrame sized to the
+                           UI-FriendsFrame-*-bnet art, tab pages re-anchored / lists scaled, pooled side tabs as bottom tabs)
   Modules/Forever.lua   Forever-only adjustments for the "camelot" UI overlay (loaded last)
   README.md             user-facing description of every option (both flavors)
 addon.json              addon name, version (single source; the .toc carries @project-version@),
@@ -110,7 +112,7 @@ which hooks the same Blizzard functions *after* the other modules, and
 `Modules/ComboPoints.lua` / `Modules/SpellBook.lua` / `Modules/TalentFrame.lua` /
 `Modules/CharacterFrame.lua` / `Modules/CharacterReputation.lua` / `Modules/CharacterSkills.lua` /
 `Modules/CharacterInspect.lua` /
-`Modules/ProfessionsFrame.lua` / `Modules/GroupFinder.lua`, options only Forever has, with
+`Modules/ProfessionsFrame.lua` / `Modules/GroupFinder.lua` / `Modules/SocialFrame.lua`, options only Forever has, with
 `Modules/PlayerSpellsPanel.lua` shared by the spellbook and talents), each starting with `if not ns.IS_FOREVER then return end` right
 after `local _, ns = ...`, so on retail they register nothing.
 `ns.IS_FOREVER` (set in `Core.lua` from the Interface version) is the only
@@ -407,6 +409,21 @@ for the token in chat or put it in a file).
   `ScrollUtil.AddManagedScrollBarVisibilityBehavior` (offsets from the page's
   corners, re-applied when its scroll bar shows or hides): move the page,
   not the list.
+- Social window (Forever only): the O key opens the 12.x Social UI
+  (`Blizzard_SocialUI`, `SocialUIFrame`; retail 12.1's source has it too),
+  not `FriendsFrame`, while `C_SocialUI.IsSystemEnabled()` (server-side):
+  `ToggleFriendsFrame` forwards to `SocialUIControl`. A PortraitFrameTemplate
+  with one content frame per tab (`tabDefinitions[type].contentFrame`,
+  created at load, anchored once; most are `SocialUIContactsFrameTemplate`:
+  `FilterBar`, `ScrollBox`, `ActionButton`) and `LargeSideTabButtonTemplate`
+  tabs from a pool, released on every hide and laid out again by
+  `RefreshTabs` on every show. Side windows (ignore list, broadcast, raid
+  info) are anchored once at load right of the tab column, and the panel's
+  `extraWidthFunc` adds that column's width. The raid tab's player buttons
+  are `SecureUnitButtonTemplate`: once a raid has been shown, the window
+  and the raid page are protected (no size, anchor or scale changes in
+  combat). Many of its widgets are `UserScaled*` (re-sized by the text size
+  setting), so size them where Blizzard does not, or scale their parent.
 - Controller UI (Forever only: `Blizzard_Gamepad*`, game type `camelot`):
   the focused window gets a gold glow (`FrameGlow`, from
   `PortraitFrameBaseTemplate` / `DefaultPanelBaseTemplate`, anchored round

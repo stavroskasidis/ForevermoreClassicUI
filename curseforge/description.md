@@ -44,7 +44,7 @@ every supported version in the file's Game Version field:
 - **Minimap:** Minimap, Group Finder Eye
 - **Windows:** Window Frames (vendor, mail, quests, trade, social,
   inspect and more), Quest Log, Game Menu, Loot, Loot Rolls, Trainer, Bank, Auction House,
-  Character\*, Spellbook\*, Talents\*, Professions\*, Looking For Group\*
+  Character\*, Spellbook\*, Talents\*, Professions\*, Looking For Group\*, Social\*
 
 \* _WoW Forever only_
 

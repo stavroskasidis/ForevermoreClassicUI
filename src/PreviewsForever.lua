@@ -23,8 +23,9 @@
 	  * bank: the slot atlases and uniform columns of Camelot\BankFrame.xml.
 	The windows (character, spellbook, talents, trainer, auction house,
 	professions, loot) are in-game screenshots of both looks instead, in
-	Textures\Previews; the Looking For Group window has a screenshot of its
-	modern look and a drawing of its classic one (GroupFinder.lua's layout).
+	Textures\Previews; the Looking For Group and social windows have a
+	screenshot of their modern look and a drawing of their classic one
+	(GroupFinder.lua's and SocialFrame.lua's layouts).
 ]]
 
 local _, ns = ...
@@ -70,6 +71,9 @@ ns.PreviewImages = {
 	},
 	lfgframe = {
 		modern = Image("forever-lfgframe-modern", 240, 256, 256, 256),
+	},
+	socialframe = {
+		modern = Image("forever-socialframe-modern", 176, 256, 256, 256),
 	},
 }
 local Atlas, At, Color, File, Fill, Layer, Mask = K.Atlas, K.At, K.Color, K.File, K.Fill, K.Layer, K.Mask
@@ -314,6 +318,77 @@ Previews.lfgframe = {
 
 		local x = 16
 		for i, label in ipairs(LFG_TAB_LABELS) do
+			x = x + LfgTab(c, x, -435, label, i == 1) - 16
+		end
+	end,
+}
+
+---------------------------------------------------------------------------
+-- Social window (SocialFrame.lua: the Battle.net friends frame)
+---------------------------------------------------------------------------
+
+local FRIENDS_FRAME = "Interface\\FriendsFrame\\UI-FriendsFrame-"
+local SOCIAL_TAB_LABELS = {
+	SOCIAL_UI_FRIENDS_TAB_NAME or "Friends", SOCIAL_UI_RECENT_ALLIES_TAB_NAME or "Recent Allies",
+	SOCIAL_UI_FRIEND_REQUESTS_TAB_NAME or "Friend Requests", SOCIAL_UI_RAID_TAB_NAME or "Raid",
+}
+local SOCIAL_FRIENDS = {
+	{ "Thrall", 60, "SHAMAN", "Orgrimmar", "friends-status-online" },
+	{ "Rexxar", 60, "HUNTER", "Desolace", "friends-status-online" },
+	{ "Rokhan", 58, "ROGUE", "Stranglethorn Vale", "friends-status-away" },
+}
+
+Previews.socialframe = {
+	width = 384, height = 470,
+	classic = function(c)
+		File(c, "Interface\\FriendsFrame\\FriendsFrameScrollIcon", 64, 64, 6, -4, "BACKGROUND", -2)
+		File(c, FRIENDS_FRAME .. "TopLeft-bnet", 256, 256, 0, 0, "BACKGROUND", -1)
+		File(c, FRIENDS_FRAME .. "TopRight-bnet", 128, 256, 256, 0, "BACKGROUND", -1)
+		File(c, FRIENDS_FRAME .. "Pending-BotLeft", 256, 256, 0, -256, "BACKGROUND", -1)
+		File(c, FRIENDS_FRAME .. "Pending-BotRight", 128, 256, 256, -256, "BACKGROUND", -1)
+		K.Text(c, "GameFontNormal", SOCIAL_UI_FRIENDS_TAB_NAME or "Friends", "CENTER", 197, -24, "TOPLEFT")
+		File(c, "Interface\\Buttons\\UI-Panel-MinimizeButton-Up", 32, 32, 321, -8, "ARTWORK")
+
+		-- The Battle.net bar: status, BattleTag strip, menu button.
+		At(Atlas(c, "friends-status-online", "ARTWORK", 0, 14, 14), "CENTER", 84, -49, c, "TOPLEFT")
+		File(c, "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24, 94, -37, "ARTWORK")
+		File(c, "Interface\\FriendsFrame\\battlenet-friends-main", 184, 29, 128, -35, "BORDER", 0,
+			{ 0.00390625, 0.74609375, 0.00195313, 0.05859375 })
+		local battleTag = BNGetInfo and select(2, BNGetInfo())
+		K.Text(c, "GameFontNormal", battleTag or BATTLETAG or "BattleTag", "CENTER", 220, -49, "TOPLEFT", { 0.345, 0.667, 0.867 })
+		At(Atlas(c, "common-button-tertiary-square-normal", "BORDER", 0, 28, 28), "CENTER", 328, -49, c, "TOPLEFT")
+		At(Atlas(c, "friends-icon-menu", "ARTWORK", 0), "CENTER", 328, -49, c, "TOPLEFT")
+
+		-- The search box and the classic filter box.
+		At(Atlas(c, "common-searchbar-a", "BORDER", 0, 168, 20), "LEFT", 37, -80, c, "TOPLEFT")
+		K.Text(c, "GameFontDisableSmall", SOCIAL_UI_SEARCH_BOX_INSTRUCTIONS or SEARCH or "Search", "LEFT", 56, -80, "TOPLEFT")
+		File(c, ns.T.DROPDOWN_BOX, 25, 64, 226, -47, "ARTWORK", 0, { 0, 0.1953125, 0, 1 })
+		File(c, ns.T.DROPDOWN_BOX, 60, 64, 251, -47, "ARTWORK", 0, { 0.1953125, 0.8046875, 0, 1 })
+		File(c, ns.T.DROPDOWN_BOX, 25, 64, 311, -47, "ARTWORK", 0, { 0.8046875, 1, 0, 1 })
+		K.Text(c, "GameFontHighlightSmall", FILTER or "Filter", "RIGHT", 293, -78, "TOPLEFT")
+		File(c, "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24, 296, -65, "OVERLAY")
+
+		-- Blizzard's cards, scaled into the well, and the scroll bar in the
+		-- trough.
+		for i, friend in ipairs(SOCIAL_FRIENDS) do
+			local y = -101 - (i - 1) * 53
+			At(Atlas(c, "friends-card-default", "BORDER", 1, 296, 52), "TOPLEFT", 21, y)
+			At(Atlas(c, friend[5], "ARTWORK", 0, 14, 14), "TOPLEFT", 25, y - 4)
+			local color = RAID_CLASS_COLORS and RAID_CLASS_COLORS[friend[3]]
+			K.Text(c, "GameFontNormal", friend[1], "TOPLEFT", 42, y - 5, "TOPLEFT", color and { color.r, color.g, color.b })
+			local class = LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[friend[3]] or friend[3]
+			K.Text(c, "GameFontHighlightSmall", (LEVEL or "Level") .. " " .. friend[2] .. " " .. class, "TOPLEFT", 43, y - 21, "TOPLEFT")
+			K.Text(c, "GameFontDisableSmall", friend[4], "TOPLEFT", 43, y - 35, "TOPLEFT")
+		end
+		File(c, ns.T.SCROLL_UP .. "Up", 16, 16, 324, -99, "ARTWORK", 0, { 0.2, 0.8, 0.25, 0.75 })
+		File(c, ns.T.SCROLL_DOWN .. "Up", 16, 16, 324, -391, "ARTWORK", 0, { 0.2, 0.8, 0.25, 0.75 })
+		File(c, ns.T.SCROLL_KNOB, 18, 24, 323, -115, "ARTWORK", 0, { 0.2, 0.8, 0.125, 0.875 })
+
+		File(c, "Interface\\Buttons\\UI-Panel-Button-Up", 160, 22, 100, -410, "ARTWORK", 0, { 0, 0.625, 0, 0.6875 })
+		K.Text(c, "GameFontNormal", SOCIAL_UI_FRIENDS_LIST_ADD_FRIEND_BUTTON_LABEL or ADD_FRIEND or "Add Friend", "CENTER", 180, -421, "TOPLEFT")
+
+		local x = 16
+		for i, label in ipairs(SOCIAL_TAB_LABELS) do
 			x = x + LfgTab(c, x, -435, label, i == 1) - 16
 		end
 	end,
