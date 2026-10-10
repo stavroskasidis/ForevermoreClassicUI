@@ -5,6 +5,14 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.27.0
+
+- New Social Window option (WoW Forever only): the classic friends list
+  frame with the Battle.net bar, for the social window (O key), with its
+  tabs as vanilla tabs under the frame.
+- The up / down arrows of the classic scroll bars are drawn at their
+  vanilla size.
+
 ## 1.26.2
 
 - Looking For Group (Forever): the new Select Playstyle dropdown no longer
