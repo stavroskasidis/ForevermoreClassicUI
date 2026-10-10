@@ -15,8 +15,7 @@
 
 	Forever's inspect window (Blizzard_InspectUI\Camelot) is a
 	ButtonFrameTemplate panel (338x424) with the paperdoll page
-	(InspectPaperDollFrame: level line, a Talents button that opens the
-	inspected player's talents, the model, the slots) and the guild page,
+	(InspectPaperDollFrame: level line, the model, the slots) and the guild page,
 	switched by icon tabs down its right side (InspectFrame.ModeTabs,
 	LargeSideTabButtonTemplate, as on its character window); its bottom tabs
 	are hidden. It is re-skinned in place with CharacterFrame.lua's art, slot
@@ -26,10 +25,9 @@
 	    the frame is the vanilla window's height without its tab shelf, so it
 	    opens where the modern one does); the NineSlice, the inset and the
 	    modern portrait are faded and the frame takes the mouse over the art,
-	  * the slots, model, level line, Talents button and the faction logo
-	    (shown instead of an out-of-range player's model) are placed on the
-	    vanilla spots; the Talents button sits in the band under the title,
-	    where Blizzard puts it,
+	  * the slots, model, level line (in 1.12's small font) and the faction
+	    logo (shown instead of an out-of-range player's model) are placed on
+	    the vanilla spots,
 	  * the icon tabs are Blizzard's own tab frames, moved under the frame and
 	    drawn as the vanilla tabs (so a click stays Blizzard's),
 	  * with the controller UI on, its focus glow, footer and L1 / R1 tab
@@ -61,10 +59,10 @@ ns.windowOwners.InspectFrame = function()
 end
 
 -- The model over the whole dark page, from under the band down to the
--- weapon row (1.12 had no stat boxes on the inspect page); the Talents
+-- weapon row (1.12 had no stat boxes on the inspect page); Blizzard's View
 -- button in the band, under the level line.
 local MODEL_HEIGHT = 300
-local TALENTS_Y = -53
+local BUTTON_Y = -53
 local FACTION_SIZE = 200
 
 local LEFT_SLOTS = { "InspectHeadSlot", "InspectNeckSlot", "InspectShoulderSlot", "InspectBackSlot",
@@ -216,8 +214,10 @@ local function PlaceLines()
 	if page.LevelTextWrapper then
 		Point(page.LevelTextWrapper, "TOP", origin, "TOPLEFT", center, CW.LEVEL_Y)
 	end
-	for _, button in ipairs({ page.InspectTalents, page.ViewButton }) do
-		Point(button, "TOP", origin, "TOPLEFT", center, TALENTS_Y)
+	-- 1.12's small level line (Blizzard's is in a large outlined font).
+	if InspectLevelText then InspectLevelText:SetFontObject(GameFontNormalSmall) end
+	if page.ViewButton then
+		Point(page.ViewButton, "TOP", origin, "TOPLEFT", center, BUTTON_Y)
 	end
 end
 

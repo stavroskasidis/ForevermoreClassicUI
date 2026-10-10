@@ -552,24 +552,6 @@ local function DockRightPane()
 		end
 	end
 
-	-- The lists hang under the stone header (faded here); the pet tab swaps it
-	-- for a taller one (StoneBG2) that makes room for a hunter pet's loyalty
-	-- line under the level, so the pet's list started lower than the
-	-- player's. It starts where the player's does, and one line lower when
-	-- Blizzard makes the level box taller for the loyalty.
-	local petList = CharacterStatsPanePetScrollBox
-	local stone = C_Texture.GetAtlasInfo("UI-Character-Info-Stat-StoneBG")
-	local levelInfo = PaperDollLevelInfo
-	if petList and petList.ScrollBox and stone and levelInfo then
-		local function PlacePetList()
-			local extra = math.max(0, levelInfo:GetHeight() - 20) -- its XML height
-			Point(petList.ScrollBox, "TOPLEFT", pane, "TOPLEFT", 10, -(stone.height + 8 + extra))
-			petList.ScrollBox:SetPoint("BOTTOMRIGHT", petList, "BOTTOMRIGHT", -30, STATS_LIST_BOTTOM)
-		end
-		PlacePetList()
-		ns.Hook("PaperDollFrame_SetPetLevel", PlacePetList)
-	end
-
 	local toggle = frame.RightPaneToggleButton
 	if toggle then
 		Point(toggle, "CENTER", origin, "TOPLEFT", TOGGLE_X, TOGGLE_Y)
@@ -651,11 +633,19 @@ local function PlaceModel()
 	for _, key in ipairs({ "BackgroundTopLeft", "BackgroundTopRight", "BackgroundBotLeft", "BackgroundBotRight", "BackgroundOverlay" }) do
 		Fade(scene[key])
 	end
+	-- The rock strip Blizzard draws across the top of the left pane, over the
+	-- art's band (behind its level line, see CreateNameLines).
+	if PaperDollFrame.TopBackgroundStripHost then
+		FadeRegions(PaperDollFrame.TopBackgroundStripHost)
+	end
 	-- The zoom / rotate bar shows while the mouse is over the model (the
 	-- scene's OnEnter / OnLeave), but PaperDollFrame_OnShow shows it on every
 	-- open as well, where it stayed until the mouse had crossed the model.
+	-- Blizzard hangs it under the left pane's top (under its rock strip); it
+	-- goes back to the model's top, on the paperdoll and the pet page.
 	local controls = scene.ControlFrame
 	if controls then
+		Point(controls, "TOP", scene, "TOP", 0, -10)
 		PaperDollFrame:HookScript("OnShow", function()
 			if not scene:IsMouseOver() and not controls:IsMouseOver() then
 				controls:Hide()
@@ -673,10 +663,16 @@ local function UpdateGuild()
 	end
 end
 
--- The level line is Blizzard's (in the right pane, hidden with it), copied
--- whenever Blizzard sets it for the player or the pet.
+-- 1.12's small level line under the title. The player's is copied from
+-- Blizzard's whenever Blizzard sets it; the pet's is written as Blizzard's
+-- old one was ("Level 20 Wolf"): Blizzard's adds the loyalty, which goes on
+-- the guild line here.
 local function UpdateLevel()
-	levelText:SetText(CharacterLevelText and CharacterLevelText:GetText() or "")
+	if IsPetPage() and UnitExists("pet") then
+		levelText:SetFormattedText(UNIT_TYPE_LEVEL_TEMPLATE or "Level %d %s", UnitLevel("pet"), UnitCreatureFamily("pet") or "")
+	else
+		levelText:SetText(CharacterLevelText and CharacterLevelText:GetText() or "")
+	end
 end
 
 -- The pet page: the pet's name on the title bar (in place of Blizzard's
@@ -708,6 +704,10 @@ local function CreateNameLines(parent)
 	petNameText:SetPoint("TOPRIGHT", origin, "TOPLEFT", TITLE_RIGHT, TITLE_Y)
 	petNameText:SetHeight(frame.TitleContainer and frame.TitleContainer:GetHeight() or 20)
 	petNameText:Hide()
+	-- Blizzard's level lines (the player's and the pet's, a large outlined
+	-- font over the top of the left pane, shown and hidden by Blizzard).
+	Fade(PaperDollLevelInfo)
+	Fade(PaperDollPetLevelInfo)
 	UpdateLevel()
 	UpdateGuild()
 	ns.Hook("PaperDollFrame_SetLevel", UpdateLevel)
