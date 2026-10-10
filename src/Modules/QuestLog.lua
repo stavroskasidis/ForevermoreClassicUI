@@ -15,9 +15,10 @@
 	through Blizzard's own functions:
 
 	  * the list: every quest log entry but hidden ones and world / bonus
-	    (task) quests; the zone headers as +/- rows (ExpandQuestHeader /
-	    CollapseQuestHeader) with the "All" tab over the list to collapse or
-	    expand them all; the titles in their difficulty colour with the
+	    (task) quests; the zone headers as +/- rows, all expanded at first
+	    (the window keeps its own collapsed headers, see BuildEntries), with
+	    the "All" tab over the list to collapse or expand them all; the
+	    titles in their difficulty colour with the
 	    (Complete) / (Failed) / elite tag, the party members on the quest and
 	    the tracked check, the selected one on the tinted highlight bar. A
 	    click selects, a shift-click links it into an open chat box or tracks
@@ -94,9 +95,11 @@ local TITLE_WIDTH = 275 -- a title with its tag
 local HIGHLIGHT_WIDTH = 293
 
 local frame, list, detail
+local Update -- defined with the list
 local Place, UpdateMicroButton, CloseInteractions -- defined with the window
 local art = {}
 local entries = {}  -- the shown log entries (C_QuestLog.GetInfo tables)
+local collapsedHeaders = {} -- [header title] = true, collapsed in the window
 local selectedQuestID
 
 ---------------------------------------------------------------------------
@@ -105,6 +108,16 @@ local selectedQuestID
 
 local function IsListed(info)
 	return info and not info.isHidden and (info.isHeader or not (info.isTask or info.isBounty))
+end
+
+-- The game's collapsed headers (isCollapsed, ExpandQuestHeader /
+-- CollapseQuestHeader) are the world map's: its quest list collapses every
+-- header not on the map it shows whenever it refreshes
+-- (QuestMapFrame_ResetFilters), so read from there the log opened with
+-- every zone collapsed (seen 2026-10-10). The window keeps its own for the
+-- session instead, every header expanded at first like 1.12's.
+local function IsCollapsed(info)
+	return collapsedHeaders[info.title] == true
 end
 
 -- The entries shown, without headers left empty by the quests skipped. A
@@ -119,7 +132,7 @@ local function BuildEntries()
 		if IsListed(info) then
 			if info.isHeader then
 				pending = info
-				collapsed = info.isCollapsed
+				collapsed = IsCollapsed(info)
 				if collapsed then
 					table.insert(entries, info)
 					pending = nil
@@ -255,7 +268,7 @@ local function InitRow(row, info)
 	if info.isHeader then
 		row:SetText(info.title or "")
 		row.tag:SetText("")
-		local file = (info.isCollapsed and T.PLUS_BUTTON or T.MINUS_BUTTON) .. "Up"
+		local file = (IsCollapsed(info) and T.PLUS_BUTTON or T.MINUS_BUTTON) .. "Up"
 		row.expand:SetTexture(file)
 		row.expand:Show()
 		row.expandHighlight:Show()
@@ -303,12 +316,9 @@ local function OnRowClick(row)
 	local info = row.info
 	if not info then return end
 	if info.isHeader then
-		if info.isCollapsed then
-			ExpandQuestHeader(info.questLogIndex)
-		else
-			CollapseQuestHeader(info.questLogIndex)
-		end
-		return -- QUEST_LOG_UPDATE redraws the list
+		collapsedHeaders[info.title] = not IsCollapsed(info) or nil
+		Update()
+		return
 	end
 	local chat = ChatFrameUtil and ChatFrameUtil.GetActiveWindow and ChatFrameUtil.GetActiveWindow()
 	if IsModifiedClick("CHATLINK") and chat then
@@ -373,7 +383,7 @@ end
 local function UpdateCollapseAll()
 	local anyExpanded = false
 	for _, info in ipairs(entries) do
-		if info.isHeader and not info.isCollapsed then
+		if info.isHeader and not IsCollapsed(info) then
 			anyExpanded = true
 			break
 		end
@@ -382,20 +392,15 @@ local function UpdateCollapseAll()
 	art.collapseAll.anyExpanded = anyExpanded
 end
 
--- Headers are collapsed / expanded from the last one up: each call re-indexes
--- the entries after it.
 local function ToggleAllHeaders()
-	local collapse = art.collapseAll.anyExpanded
-	for i = #entries, 1, -1 do
-		local info = entries[i]
-		if info.isHeader and info.isCollapsed ~= collapse then
-			if collapse then
-				CollapseQuestHeader(info.questLogIndex)
-			else
-				ExpandQuestHeader(info.questLogIndex)
-			end
+	if art.collapseAll.anyExpanded then
+		for _, info in ipairs(entries) do
+			if info.isHeader then collapsedHeaders[info.title] = true end
 		end
+	else
+		wipe(collapsedHeaders)
 	end
+	Update()
 end
 
 local function UpdateCount()
@@ -406,7 +411,7 @@ local function UpdateCount()
 	return numQuests
 end
 
-local function Update()
+function Update()
 	if not frame:IsShown() then return end
 	BuildEntries()
 	local numQuests = UpdateCount()
