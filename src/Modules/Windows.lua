@@ -24,8 +24,10 @@
 	    layout (a themed border) gets Blizzard's own art back,
 	  * the close button: the round classic one on the corner, and the
 	    classic bigger / smaller buttons beside it on a minimizable window,
-	  * the tabs (PanelTabButtonTemplate, PanelTopTabButtonTemplate): the
-	    vanilla character window tabs (ns.SkinPanelTab),
+	  * the tabs: the vanilla character window tabs under the window
+	    (PanelTabButtonTemplate, ns.SkinPanelTab), the pre-Dragonflight
+	    TabButtonTemplate ones at its top (PanelTopTabButtonTemplate, the
+	    macro window's),
 	  * the trade window's second portrait gets the classic ring too.
 
 	The windows other options redraw in full (character, spellbook, talents,
@@ -47,6 +49,8 @@ local T = ns.T
 
 T.PANEL_BIGGER  = "Interface\\Buttons\\UI-Panel-BiggerButton-"  -- + Up / Down / Disabled / Highlight
 T.PANEL_SMALLER = "Interface\\Buttons\\UI-Panel-SmallerButton-" -- + Up / Down / Disabled / Highlight
+T.HELP_TAB_ACTIVE   = "Interface\\HelpFrame\\HelpFrameTab-Active"
+T.HELP_TAB_INACTIVE = "Interface\\HelpFrame\\HelpFrameTab-Inactive"
 
 local module = ns:RegisterModule({
 	key = "windows",
@@ -275,21 +279,115 @@ local function InstallTabHooks()
 	end
 end
 
+-- Top tabs (PanelTopTabButtonTemplate, the macro window's) were
+-- TabButtonTemplate before Dragonflight: HelpFrameTab-Inactive, and
+-- HelpFrameTab-Active 3px lower while selected (it joins the box under it),
+-- each cut into 16px ends and a middle, 32px tall from the tab's bottom edge
+-- (the art is the file's lower 21 rows), with UI-Character-Tab-Highlight
+-- hanging 8px under it, 7px wider each side (9.2.7
+-- SharedUIPanelTemplates.xml). 9.2 put the label 2px above the tab's centre
+-- (3px below it while selected), which pokes it out over the inactive art's
+-- top with today's font; it sits as deep in both states instead. The
+-- template's middle pieces tile, and a file (clamped, unlike its atlases)
+-- tiles its transparent last column, so the tiling is switched off. The
+-- tabs keep Blizzard's place; their width is 9.2's (label + 17px:
+-- PanelTemplates_TabResize(tab, -15) on 16px ends), re-applied after every
+-- PanelTemplates_TabResize (each tab's OnShow) and kept inside the window, so
+-- the second label is no longer cut short at the window's maxTabWidth.
+local HELP_TAB_END, HELP_TAB_PADDING, HELP_TAB_ACTIVE_DROP = 16, 17, 3
+local HELP_TAB_TEXT_Y, HELP_TAB_ACTIVE_TEXT_Y = 0, -3
+local helpTabs = setmetatable({}, { __mode = "k" }) -- tab -> its window
+
+local function PlaceHelpTabText(tab)
+	if tab.Text then
+		tab.Text:SetPoint("CENTER", tab, "CENTER", 0, tab.LeftActive:IsShown() and HELP_TAB_ACTIVE_TEXT_Y or HELP_TAB_TEXT_Y)
+	end
+end
+
+local function SkinHelpTab(frame, tab)
+	if helpTabs[tab] then return end
+	helpTabs[tab] = frame
+	local function Pieces(file, left, middle, right, y)
+		for _, piece in ipairs({ { left, 0, 0.25 }, { middle, 0.25, 0.75 }, { right, 0.75, 1 } }) do
+			piece[1]:SetHorizTile(false)
+			ns.SetTexture(piece[1], file, piece[2], piece[3], 0, 1)
+			piece[1]:SetHeight(32)
+		end
+		left:SetWidth(HELP_TAB_END)
+		right:SetWidth(HELP_TAB_END)
+		ns.Point(left, "BOTTOMLEFT", tab, "BOTTOMLEFT", 0, y)
+		ns.Point(right, "BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, y)
+		ns.Point(middle, "TOPLEFT", left, "TOPRIGHT", 0, 0)
+		middle:SetPoint("TOPRIGHT", right, "TOPLEFT", 0, 0)
+	end
+	Pieces(T.HELP_TAB_INACTIVE, tab.Left, tab.Middle, tab.Right, 0)
+	Pieces(T.HELP_TAB_ACTIVE, tab.LeftActive, tab.MiddleActive, tab.RightActive, -HELP_TAB_ACTIVE_DROP)
+	for _, key in ipairs({ "LeftHighlight", "MiddleHighlight", "RightHighlight" }) do
+		if tab[key] then tab[key]:SetAlpha(0) end
+	end
+	if ns.HasTexture(T.TAB_HIGHLIGHT) then
+		local glow = tab:CreateTexture(nil, "HIGHLIGHT")
+		ns.SetTexture(glow, T.TAB_HIGHLIGHT)
+		glow:SetBlendMode("ADD")
+		glow:SetHeight(32)
+		glow:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT", -5, -8)
+		glow:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 9, -8)
+	end
+	PlaceHelpTabText(tab)
+end
+
+local function SizeHelpTab(tab)
+	local frame, text = helpTabs[tab], tab.Text
+	if not (text and text.GetUnboundedStringWidth) then return end
+	local width = math.ceil(text:GetUnboundedStringWidth()) + HELP_TAB_PADDING
+	local left, right = tab:GetLeft(), frame:GetRight()
+	if left and right then
+		width = math.min(width, math.floor(right - left) - TAB_X)
+	end
+	tab:SetWidth(width)
+	text:SetWidth(width - HELP_TAB_PADDING)
+end
+
+local helpTabHooksInstalled = false
+
+local function InstallHelpTabHooks()
+	if helpTabHooksInstalled then return end
+	helpTabHooksInstalled = true
+	for _, name in ipairs({ "PanelTemplates_SelectTab", "PanelTemplates_DeselectTab", "PanelTemplates_SetDisabledTabState" }) do
+		ns.Hook(name, function(tab)
+			if helpTabs[tab] then PlaceHelpTabText(tab) end
+		end)
+	end
+	ns.Hook("PanelTemplates_TabResize", function(tab)
+		if helpTabs[tab] then SizeHelpTab(tab) end
+	end)
+end
+
 local function SkinTabs(frame)
 	if not frame.Tabs then return end
 	local topTabLoad = PanelTopTabButtonMixin and PanelTopTabButtonMixin.OnLoad
-	local bottom = {}
+	local helpArt = ns.HasTexture(T.HELP_TAB_ACTIVE) and ns.HasTexture(T.HELP_TAB_INACTIVE)
+	local bottom, top = {}, false
 	for _, tab in ipairs(frame.Tabs) do
 		-- Only PanelTabButtonTemplate's pieces (other templates also collect
 		-- into a Tabs array).
 		if tab.LeftActive and tab.MiddleActive and tab.RightActive then
 			local isTop = topTabLoad ~= nil and tab.OnLoad == topTabLoad
-			ns.SkinPanelTab(tab, isTop, true)
-			if not isTop then
-				table.insert(bottom, tab)
-				tabWindows[tab] = frame
+			if isTop and helpArt then
+				SkinHelpTab(frame, tab)
+				SizeHelpTab(tab)
+				top = true
+			else
+				ns.SkinPanelTab(tab, isTop, true)
+				if not isTop then
+					table.insert(bottom, tab)
+					tabWindows[tab] = frame
+				end
 			end
 		end
+	end
+	if top then
+		InstallHelpTabHooks()
 	end
 	if #bottom == 0 then return end
 	bottomTabs[frame] = bottom
