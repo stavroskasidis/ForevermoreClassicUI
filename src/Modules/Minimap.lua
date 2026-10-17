@@ -32,6 +32,13 @@
 	    the map when "rotate minimap" is on, so it carries the classic compass
 	    ring (shown only in that mode) and the static ring border is a texture
 	    of our own; the north tag is shown in the fixed mode, like classic.
+	  * WoW Forever's cluster (since build 70425; retail may follow) has no
+	    BorderTop header: its zone text, tracking, calendar and addon
+	    compartment buttons draw a StateTexture (+ AddTexture for mouseover)
+	    that ButtonStateBehaviorMixin re-sets on every state change. Those two
+	    regions are moved into a hidden frame, so the classic textures set on
+	    the buttons show instead. Its calendar refreshes the day through the
+	    button's SetDate method rather than the GameTimeFrame_SetDate global.
 	  * Everything touched is widget state; no Lua fields are written on
 	    Blizzard's frames.
 
@@ -87,6 +94,18 @@ local parkingLot = CreateFrame("Frame", nil, UIParent)
 parkingLot:Hide()
 
 local art = {} -- textures/frames created by this module
+
+-- Parks the state art of a ButtonStateBehaviorMixin button (WoW Forever),
+-- which Blizzard re-applies on every mouseover / press.
+local function HideStateTextures(button)
+	if not button then return end
+	for _, key in ipairs({ "StateTexture", "AddTexture" }) do
+		local texture = button[key]
+		if texture and texture.SetParent then
+			texture:SetParent(parkingLot)
+		end
+	end
+end
 
 ---------------------------------------------------------------------------
 -- Cluster geometry
@@ -162,8 +181,11 @@ local function ApplyFrameArt()
 		Point(overlay, "CENTER", Minimap, "CENTER", 0, 0)
 	end
 
-	-- The retail header nine-slice; everything anchored to it is re-anchored.
-	MinimapCluster.BorderTop:Hide()
+	-- The retail header nine-slice (gone on WoW Forever); everything anchored
+	-- to it is re-anchored.
+	if MinimapCluster.BorderTop then
+		MinimapCluster.BorderTop:Hide()
+	end
 end
 
 -- Re-applies what Blizzard resets from outside of the cluster's own layout
@@ -180,6 +202,7 @@ end
 local function ApplyZoneText()
 	local button = MinimapCluster.ZoneTextButton
 	button:SetParent(MinimapCluster.MinimapContainer)
+	HideStateTextures(button)
 	MinimapZoneText:SetSize(140, 12)
 	MinimapZoneText:SetJustifyH("CENTER")
 	Point(MinimapZoneText, "CENTER", button, "TOP", 0, -6)
@@ -228,6 +251,7 @@ local function ApplyTracking()
 	end
 
 	local button = tracking.Button
+	HideStateTextures(button)
 	button:SetSize(BUTTON_SIZE, BUTTON_SIZE)
 	Point(button, "TOPLEFT", tracking, "TOPLEFT", 0, 0)
 
@@ -325,15 +349,23 @@ local function ApplyIndicators()
 	ns.Hook("MiniMapIndicatorFrame_UpdatePosition", LayoutIndicators)
 end
 
--- Addon compartment (retail only): styled like a classic minimap button on
--- the left side of the ring, below the tracking button.
+-- Addon compartment: styled like a classic minimap button on the left side
+-- of the ring, below the tracking button. WoW Forever's SetHeaderUnderneath
+-- anchors it to the calendar, so it is re-anchored after that too.
+local function AnchorAddonCompartment()
+	local button = AddonCompartmentFrame
+	if not button then return end
+	Point(button, "TOPLEFT", MinimapBackdrop, "TOPLEFT", 4, -82)
+end
+
 local function ApplyAddonCompartment()
 	local button = AddonCompartmentFrame
 	if not button then return end
 
 	button:SetParent(MinimapBackdrop)
+	HideStateTextures(button)
 	button:SetSize(BUTTON_SIZE, BUTTON_SIZE)
-	Point(button, "TOPLEFT", MinimapBackdrop, "TOPLEFT", 4, -82)
+	AnchorAddonCompartment()
 
 	button:SetNormalTexture(T.MINIMAP_BACKGROUND)
 	local normal = button:GetNormalTexture()
@@ -430,6 +462,7 @@ local function ApplyCalendar()
 	if not button then return end
 
 	button:SetParent(MinimapBackdrop)
+	HideStateTextures(button)
 	button:SetSize(40, 40)
 	Point(button, "TOPRIGHT", Minimap, "TOPRIGHT", 20, -2)
 	button:SetHitRectInsets(6, 0, 5, 10)
@@ -447,7 +480,11 @@ local function ApplyCalendar()
 	Point(button:GetFontString(), "CENTER", button, "CENTER", -1, -1)
 
 	ApplyCalendarArt()
-	ns.Hook("GameTimeFrame_SetDate", ApplyCalendarArt)
+	if button.SetDate then
+		ns.Hook(button, "SetDate", ApplyCalendarArt)
+	else
+		ns.Hook("GameTimeFrame_SetDate", ApplyCalendarArt)
+	end
 end
 
 ---------------------------------------------------------------------------
@@ -564,6 +601,7 @@ function module:Apply()
 	ns.Hook(MinimapCluster, "SetHeaderUnderneath", function(self, headerUnderneath)
 		LayoutCluster()
 		LayoutIndicators()
+		AnchorAddonCompartment()
 		if headerUnderneath and self.InstanceDifficulty and self.InstanceDifficulty.SetFlipped then
 			self.InstanceDifficulty:SetFlipped(false)
 		end

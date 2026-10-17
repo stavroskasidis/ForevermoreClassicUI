@@ -452,9 +452,15 @@ for the token in chat or put it in a file).
   the region the engine rotates with the map ("rotate minimap"), so it carries
   the CompassRing and the static ring border is the addon's own texture.
   `Blizzard_TimeManager` (clock) is load-on-demand: skin it on `ADDON_LOADED`.
-  Forever's `Blizzard_Minimap\Camelot\Skin.lua` re-sizes the container/backdrop
-  and swaps the compass atlas on every rotate change; `Diel.lua` adds a day/night
-  frame (`MinimapCluster.DielFrame`) and replaces `MinimapCluster.SetEditModeScale`.
+  Forever (since build 70425, 2026-10-16) re-sizes the container/backdrop and
+  swaps the compass atlas in `MinimapCluster:UpdateMinimapConfig`
+  (`Blizzard_Minimap\Camelot\Minimap.lua`, at load and on every rotate change);
+  its cluster has no `BorderTop` (the header is the `ZoneTextButton`), and the
+  zone text, tracking, calendar and addon compartment buttons draw a
+  `StateTexture` / `AddTexture` pair from `ButtonStateBehaviorMixin` (the module
+  parks them in a hidden frame). `Diel.lua` adds a day/night frame
+  (`MinimapCluster.DielFrame`, on the container) and replaces
+  `MinimapCluster.SetEditModeScale`.
 - Bank: `BankFrame` (Blizzard_UIPanels_Game) differs per flavor. Retail
   (`Mainline\BankFrame.*`): one bank tab (98 slots, 7 rows filled column by
   column in pairs of columns) at a time, the Bank / Warband Bank tabs a

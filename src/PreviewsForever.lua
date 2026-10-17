@@ -19,7 +19,7 @@
 	  * micro menu: the retail buttons on the action bar plate
 	    (MainMenuBarMicroMenu.xml), with Forever's spellbook button;
 	  * minimap: the UI-HUD-Minimap-Frame art around the map cut by its
-	    generic mask (Skin.lua);
+	    generic mask (Camelot\Minimap.lua);
 	  * bank: the slot atlases and uniform columns of Camelot\BankFrame.xml.
 	The windows (character, spellbook, talents, trainer, auction house,
 	professions, loot) are in-game screenshots of both looks instead, in
@@ -204,8 +204,10 @@ end
 ---------------------------------------------------------------------------
 
 Previews.minimap.modern = function(c)
-	-- Skin.lua: the frame art at its own size centred on the 198px map,
-	-- which its generic mask cuts to the frame's opening.
+	-- Camelot\Minimap.lua: the frame art at its own size centred on the
+	-- 198px map, which its generic mask cuts to the frame's opening; the
+	-- zone text on its header button between the tracking and calendar
+	-- buttons (drawn a little smaller to fit the picture).
 	local mapX, mapY = 105, -120
 	K.MapDisc(c, 170, mapX, mapY, "ui-hud-minimap-frame-generic-mask")
 	local art = Layer(c, 5)
@@ -215,12 +217,15 @@ Previews.minimap.modern = function(c)
 		frame:SetSize(width * 170 / 198, height * 170 / 198)
 	end
 	frame:SetPoint("CENTER", art, "TOPLEFT", mapX, mapY)
-	local header = Color(art, 0, 0, 0, 0.55, 160, 16, 25, -4, "ARTWORK", 1)
-	local zone = art:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	local header = Atlas(art, "ui-hud-minimap-header-button", "ARTWORK", 1, 140, 21)
+	header:SetPoint("TOPLEFT", art, "TOPLEFT", 24, -2)
+	local zone = art:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	zone:SetText(K.ZoneText())
-	zone:SetPoint("LEFT", header, "LEFT", 6, 0)
-	local tracking = Atlas(art, "ui-hud-minimap-tracking-up", "OVERLAY")
-	tracking:SetPoint("RIGHT", header, "LEFT", -1, 0)
+	zone:SetPoint("LEFT", header, "LEFT", 8, -1)
+	local tracking = Atlas(art, "ui-hud-minimap-tracking-button", "OVERLAY", 0, 21, 21)
+	tracking:SetPoint("RIGHT", header, "LEFT", 0, 0)
+	local calendar = Atlas(art, "ui-hud-minimap-calendar-button", "OVERLAY", 0, 21, 21)
+	calendar:SetPoint("TOPLEFT", header, "TOPRIGHT", -4, 0)
 	local zoomIn = Atlas(art, "ui-hud-minimap-zoom-in", "OVERLAY")
 	zoomIn:SetPoint("CENTER", art, "TOPLEFT", mapX + 72, mapY - 62)
 	local zoomOut = Atlas(art, "ui-hud-minimap-zoom-out", "OVERLAY")

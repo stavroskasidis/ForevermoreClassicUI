@@ -317,7 +317,7 @@ skin).
   classic border's bubble (the shared module fades it wherever it exists),
 - the hunter pet happiness indicator next to the pet frame is left as is,
 - the minimap frame is re-skinned by the overlay on every "rotate minimap"
-  change (`Blizzard_Minimap\Camelot\Skin.lua`); the classic art is put back
+  change (`MinimapCluster:UpdateMinimapConfig`); the classic art is put back
   afterwards, and the overlay's day/night indicator (`MinimapCluster.DielFrame`),
   which sits where classic has the calendar, is shrunk to the size of the
   classic round buttons and moved to the bottom left of the ring, left of

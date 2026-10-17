@@ -20,10 +20,11 @@
 	    "Interface\TargetingFrame\UI-PVP-*" banners; they are used when the
 	    client still has them, otherwise Blizzard's small icon is moved to
 	    the classic spot.
-	  * The minimap frame is re-skinned by Blizzard_Minimap\Camelot\Skin.lua
-	    on every "rotate minimap" change (container/backdrop size, compass
-	    atlas, a static ring underlay in the rotated mode); the classic art is
-	    re-applied after it. Camelot also adds a day/night indicator
+	  * The minimap frame is re-skinned by MinimapCluster:UpdateMinimapConfig
+	    (Blizzard_Minimap\Camelot\Minimap.lua) at load and on every "rotate
+	    minimap" change (container/backdrop size, compass atlas, a static ring
+	    underlay in the rotated mode); the classic art is re-applied after it.
+	    Camelot also adds a day/night indicator
 	    (MinimapCluster.DielFrame) at the top right of the map, where classic
 	    has the calendar; it is shrunk to the size of the classic round
 	    buttons and moved onto the ring left of the clock. Its default
@@ -245,11 +246,12 @@ end
 -- classic round buttons' ~30px rings.
 local DIEL_SCALE = 30 / 38
 
--- Camelot anchors the day/night indicator to the cluster (and scales it) from
--- its own MinimapCluster:SetEditModeScale; inside the scaled backdrop it
--- needs neither. It sits on the ring between the group finder eye and the
--- clock, mirroring the zoom-out button (the right of the ring is the screen
--- edge in the default layout). Offsets are in its own (scaled) units.
+-- Camelot anchors the day/night indicator to the container and undoes the
+-- container's scale on it from its own MinimapCluster:SetEditModeScale;
+-- inside the backdrop it is scaled with the map instead. It sits on the ring
+-- between the group finder eye and the clock, mirroring the zoom-out button
+-- (the right of the ring is the screen edge in the default layout). Offsets
+-- are in its own (scaled) units.
 local function AnchorDielFrame()
 	local diel = MinimapCluster.DielFrame
 	if not diel then return end
@@ -292,10 +294,8 @@ function minimapPart:Apply()
 	if not MinimapCluster or not MinimapBackdrop or not MinimapCompassTexture then return end
 
 	ReapplyClassicMinimap()
-	-- Skin.lua sizes the frames after the atlas swap; re-apply once it is done.
-	ns.Hook(MinimapCompassTexture, "SetAtlas", function()
-		C_Timer.After(0, ReapplyClassicMinimap)
-	end)
+	-- The rotate CVar callback calls it as a method of the cluster.
+	ns.Hook(MinimapCluster, "UpdateMinimapConfig", ReapplyClassicMinimap)
 
 	if MinimapCluster.DielFrame then
 		MinimapCluster.DielFrame:SetParent(MinimapBackdrop)
