@@ -870,8 +870,14 @@ local function SkinPartyMemberFrame(frame)
 	Point(overlay.GuideIcon, "TOPLEFT", frame, "TOPLEFT", 0, -8)
 	Point(overlay.PVPIcon, "TOPLEFT", frame, "TOPLEFT", -9, -23)
 	overlay.RoleIcon:SetSize(19, 19)
-	Point(overlay.RoleIcon, "TOPLEFT", frame, "TOPLEFT", 7, -41)
 	Point(overlay.Disconnect, "LEFT", frame, "LEFT", -7, -10)
+
+	-- Blizzard anchors the role icon's TOPRIGHT on every art change (since
+	-- Forever 1.60.1 build 70425), which would stretch it from our TOPLEFT.
+	local function AnchorRoleIcon()
+		Point(overlay.RoleIcon, "TOPLEFT", frame, "TOPLEFT", 7, -41)
+	end
+	AnchorRoleIcon()
 
 	local function ClassicPlayerArt(self)
 		SetTexture(self.Texture, T.PARTY_FRAME)
@@ -888,12 +894,14 @@ local function SkinPartyMemberFrame(frame)
 		Point(overlay.Status, "CENTER", self.Portrait, "CENTER", 0, 0)
 		overlay.Status:SetDrawLayer("ARTWORK", 0)
 		AnchorTexts()
+		AnchorRoleIcon()
 	end
 	local function ClassicVehicleArt(self)
 		self.VehicleTexture:SetSize(128, 64)
 		SetTexture(self.VehicleTexture, T.VEHICLE_PARTY)
 		Point(self.VehicleTexture, "TOPLEFT", self, "TOPLEFT", -8, -2)
 		AnchorTexts()
+		AnchorRoleIcon()
 	end
 
 	ns.Hook(frame, "ToPlayerArt", ClassicPlayerArt)
