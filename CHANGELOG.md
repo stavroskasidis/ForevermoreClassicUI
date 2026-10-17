@@ -5,6 +5,11 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.27.4
+
+- Minimap (WoW Forever): the classic minimap shows again after the latest
+  client update, which had brought the modern one back.
+
 ## 1.27.3
 
 - Window Frames: the macro window's tabs are the pre-Dragonflight ones
