@@ -5,6 +5,11 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.28.0
+
+- New Swing Timers option (WoW Forever): the weapon swing timer bars in the
+  classic cast bar look, with its border, spark and a colour per weapon.
+
 ## 1.27.7
 
 - Unit Frames (WoW Forever): the classic PvP faction banners are back on the
