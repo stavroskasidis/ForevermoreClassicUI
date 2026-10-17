@@ -5,6 +5,11 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.27.5
+
+- Controller UI (WoW Forever): the gold focus glow now hugs the vanilla
+  border of the bag windows and the spellbook instead of floating off it.
+
 ## 1.27.4
 
 - Minimap (WoW Forever): the classic minimap shows again after the latest
