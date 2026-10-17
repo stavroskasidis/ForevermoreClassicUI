@@ -37,6 +37,8 @@ src/                    the addon folder, one build for every flavor (copied as 
   Modules/PowerBars.lua    power bar textures/colours               (part of Unit Frames)
   Modules/CastBars.lua     classic cast bars (live toggle)
   Modules/MirrorTimers.lua classic breath/fatigue (mirror timer) bars (live toggle)
+  Modules/SwingTimers.lua  swing timer bars in the classic cast bar look, Forever only (live toggle; Blizzard_SwingTimer's
+                           bars, the cast bar border sliced and scaled to each bar's Edit Mode size)
   Modules/Nameplates.lua   classic nameplates drawn on the modern style (reload; forbidden plates skipped)
   Modules/Minimap.lua      classic minimap cluster (reload; keeps Blizzard's cluster, re-parents its pieces into MinimapContainer)
                            + the Group Finder Eye option (live; classic eye drawn on a child frame of QueueStatusButton)
@@ -109,7 +111,7 @@ CurseForge zip serve every flavor: the `.toc`'s `## Interface:` line lists each
 flavor's Interface version, and the zip is uploaded once, tagged with every
 game version. Forever-only code lives in its own files (`Modules/Forever.lua`,
 which hooks the same Blizzard functions *after* the other modules, and
-`Modules/ComboPoints.lua` / `Modules/SpellBook.lua` / `Modules/TalentFrame.lua` /
+`Modules/ComboPoints.lua` / `Modules/SwingTimers.lua` / `Modules/SpellBook.lua` / `Modules/TalentFrame.lua` /
 `Modules/CharacterFrame.lua` / `Modules/CharacterReputation.lua` / `Modules/CharacterSkills.lua` /
 `Modules/CharacterInspect.lua` /
 `Modules/ProfessionsFrame.lua` / `Modules/GroupFinder.lua` / `Modules/SocialFrame.lua`, options only Forever has, with

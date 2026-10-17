@@ -62,6 +62,7 @@ on Blizzard's own frames, so everything the modern UI does keeps working.
 - Player, target, focus, target of target, pet, party and boss frames in the classic art: elite and rare dragons, round portraits, the resting "Zzz" and the combat swords.
 - Flat green health bars and solid classic power bars.
 - Classic cast bars (yellow casts, green channels, red interrupts) and breath / fatigue bars.
+- Swing timers in the classic cast bar look\*.
 - Combo points down the side of the target's portrait\*.
 - The 1.x nameplates with the level bubble and the classic cast bar.
 - Buffs without the modern collapse arrow.

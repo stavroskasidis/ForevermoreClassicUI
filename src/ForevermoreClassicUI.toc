@@ -17,6 +17,7 @@ Modules\PowerBars.lua
 Modules\ComboPoints.lua
 Modules\CastBars.lua
 Modules\MirrorTimers.lua
+Modules\SwingTimers.lua
 Modules\BuffFrame.lua
 Modules\Nameplates.lua
 Modules\Minimap.lua

@@ -40,8 +40,8 @@ UI.ICON = "Interface\\AddOns\\" .. ns.ADDON_NAME .. "\\Icon.png"
 local GROUPS = {
 	{ title = "Unit Frames", text = "The frames of you, your target, your party and bosses, the bars that go with them and your buffs.",
 		keys = { "unitframes", "combopoints", "castbars", "buffs" } },
-	{ title = "Nameplates & Timers", text = "The bars over the heads of the creatures around you, and the breath and fatigue timers.",
-		keys = { "nameplates", "mirrortimers" } },
+	{ title = "Nameplates & Timers", text = "The bars over the heads of the creatures around you, and the breath, fatigue and swing timers.",
+		keys = { "nameplates", "mirrortimers", "swingtimers" } },
 	{ title = "Action Bars", text = "The bars your spells live on, their gryphons, the XP bar over them and the bags next to them.",
 		keys = { "actionbars", "endcaps", "xpbar", "bags" } },
 	{ title = "Menus", text = "The micro menu buttons and the menu that opens with Esc.",
@@ -63,6 +63,7 @@ local SUMMARIES = {
 	buffs = "Your buffs without the modern arrow that folds them away: every buff shows, as in classic.",
 	nameplates = "The classic nameplate: its border, a flat health bar and the level in its bubble.",
 	mirrortimers = "The classic breath, fatigue and feign death bars.",
+	swingtimers = "The weapon swing timers in the classic cast bar's border, with its spark and solid colours.",
 	actionbars = "Square button borders and the embossed vanilla bar behind the main bar's buttons.",
 	endcaps = "The vanilla stone gryphons at both ends of the main action bar.",
 	xpbar = "The segmented vanilla XP bar, purple or blue while rested, and the reputation bar in its standing's colour.",

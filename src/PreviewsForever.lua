@@ -107,6 +107,60 @@ Previews.nameplates.modern = function(c)
 end
 
 ---------------------------------------------------------------------------
+-- Swing timers (Forever only)
+---------------------------------------------------------------------------
+
+-- The main hand bar at Edit Mode's default size (Blizzard_SwingTimer.xml:
+-- the bar inset 5 / 4 in the frame); the classic one is laid out by
+-- SwingTimers.lua's own border code.
+local SWING_WIDTH, SWING_HEIGHT = 213, 15
+local SWING_VALUE = 0.6
+
+local function SwingFrame(c)
+	local frame = CreateFrame("Frame", nil, c)
+	frame:SetSize(SWING_WIDTH, SWING_HEIGHT)
+	frame:SetPoint("TOPLEFT", c, "TOPLEFT", (Previews.swingtimers.width - SWING_WIDTH) / 2, -10)
+	return frame
+end
+
+local function SwingLabels(frame, left, right)
+	K.Text(frame, "GameFontHighlightSmall", SWING_TIMER_MAIN_HAND or "Main Hand", "LEFT", left + 10, 0)
+	K.Text(frame, "GameFontHighlightSmall", "1.0", "RIGHT", -right - 10, 0)
+end
+
+Previews.swingtimers = {
+	width = 240, height = 35,
+	classic = function(c)
+		local art = ns.SwingTimerArt
+		local frame = SwingFrame(c)
+		local holder = CreateFrame("Frame", nil, frame)
+		holder:SetAllPoints(frame)
+		local scale, left, right, top, bottom = art.LayoutBorder(art.CreateBorder(holder), frame, SWING_HEIGHT)
+		local width, height = SWING_WIDTH - left - right, SWING_HEIGHT - top - bottom
+		Color(frame, 0, 0, 0, 0.5, width, height, left, -top, "BACKGROUND", -1)
+		local fill = Fill(frame, ns.T.STATUS_BAR, width, height, SWING_VALUE, art.COLORS[1], "ARTWORK", 0)
+		fill:SetPoint("TOPLEFT", frame, "TOPLEFT", left, -top)
+		local spark = K.Tex(holder, "OVERLAY")
+		spark:SetTexture(ns.T.CAST_SPARK)
+		spark:SetBlendMode("ADD")
+		spark:SetSize(art.SPARK_SIZE * scale, art.SPARK_SIZE * scale)
+		spark:SetPoint("CENTER", fill, "RIGHT", 0, 0)
+		SwingLabels(holder, left, right)
+	end,
+	modern = function(c)
+		local frame = SwingFrame(c)
+		Atlas(frame, "ui-swingtimerbar-background", "BACKGROUND", 0, SWING_WIDTH, SWING_HEIGHT):SetPoint("TOPLEFT")
+		Atlas(frame, "ui-swingtimerbar-frame", "BACKGROUND", 1, SWING_WIDTH, SWING_HEIGHT):SetPoint("TOPLEFT")
+		local width, height = SWING_WIDTH - 10, SWING_HEIGHT - 8
+		local fill = Fill(frame, "ui-swingtimerbar-filling-mainhand", width, height, SWING_VALUE, nil, "ARTWORK", 0)
+		fill:SetPoint("TOPLEFT", frame, "TOPLEFT", 5, -4)
+		Atlas(frame, "ui-swingtimerbar-pip", "OVERLAY", 0):SetPoint("RIGHT", fill, "RIGHT")
+		Atlas(frame, "ui-swingtimerbar-textshadow-left", "OVERLAY", -1, 171, height):SetPoint("TOPLEFT", 5, -4)
+		SwingLabels(frame, 5, 5)
+	end,
+}
+
+---------------------------------------------------------------------------
 -- Action bar gryphons
 ---------------------------------------------------------------------------
 
