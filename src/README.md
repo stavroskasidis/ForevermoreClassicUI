@@ -307,9 +307,9 @@ skin).
   player/target/focus/boss frames (`LevelBackgroundCircle`, large white font):
   hidden, and the classic level font/colour is restored in the frame art's
   own circle,
-- PvP status is a small faction circle (`PvpBackgroundCircle` +
-  `PvpBackgroundIcon`): the circle is hidden and the icon is placed where
-  classic had its PvP banner (using the legacy
+- PvP status is a small faction circle (`PvpBackgroundIcon`; older builds
+  drew a separate `PvpBackgroundCircle` under it, hidden): the icon is
+  placed where classic had its PvP banner (using the legacy
   `Interface\TargetingFrame\UI-PVP-*` art when the client has it, otherwise
   Blizzard's small icon),
 - nameplates get a level indicator box (`PlayerLevelDiffFrame`) next to

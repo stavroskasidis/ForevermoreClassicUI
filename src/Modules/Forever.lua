@@ -12,9 +12,10 @@
 	    (<ContentMain>.LevelBackgroundCircle, large white font) in the bottom
 	    corner of the frame. Classic shows it in the frame art's own circle,
 	    where the shared Unit Frames module already anchors the level text.
-	  * PvP status is a small faction circle (PvpBackgroundCircle +
-	    PvpBackgroundIcon: in PlayerFrameContentMain on the player frame, in
-	    TargetFrameContentContextual on target-style frames). The retail
+	  * PvP status is a small faction circle (PvpBackgroundIcon: in
+	    PlayerFrameContentMain on the player frame, in
+	    TargetFrameContentContextual on target-style frames; before build
+	    70425 a separate PvpBackgroundCircle was drawn under it). The retail
 	    PVPIcon/PrestigePortrait regions that the shared module repositions
 	    still exist but are never shown on Forever. Classic used the big 64x64
 	    "Interface\TargetingFrame\UI-PVP-*" banners; they are used when the
@@ -123,9 +124,11 @@ end
 local function ClassicPlayerPvPIcon()
 	local main = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
 	local icon, circle = main.PvpBackgroundIcon, main.PvpBackgroundCircle
-	if not icon or not circle then return end
+	if not icon then return end
 
-	circle:Hide()
+	if circle then
+		circle:Hide()
+	end
 	local shown = icon:IsShown()
 	if IsSecret(shown) then
 		-- The banner cannot be chosen; Blizzard's small icon, if shown, goes
@@ -169,9 +172,11 @@ end
 local function ClassicTargetPvPIcon(frame)
 	local contextual = frame.TargetFrameContent.TargetFrameContentContextual
 	local icon, circle = contextual.PvpBackgroundIcon, contextual.PvpBackgroundCircle
-	if not icon or not circle then return end
+	if not icon then return end
 
-	circle:Hide()
+	if circle then
+		circle:Hide()
+	end
 	local shown = icon:IsShown()
 	if IsSecret(shown) then
 		icon:SetScale(1)

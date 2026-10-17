@@ -234,7 +234,8 @@ for the token in chat or put it in a file).
   rules below (secrets, taint, protected frames, mirror bars) applies to
   Forever unchanged. Known overlay differences: level shown in
   `<ContentMain>.LevelBackgroundCircle`, PvP status in
-  `PvpBackgroundCircle/PvpBackgroundIcon` (retail `PVPIcon`/`PrestigePortrait`
+  `PvpBackgroundIcon` (a separate `PvpBackgroundCircle` under it before build
+  70425) (retail `PVPIcon`/`PrestigePortrait`
   never shown), nameplate `PlayerLevelDiffFrame` level box next to the health
   bar, `PetFrameHappiness`, `ComboFrame_ApplyOverrides`, minimap `DielFrame`
   (day/night) and `MinimapContainer.PlayerCoords`. To find the installed
