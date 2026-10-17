@@ -39,13 +39,8 @@ Cover each option, the options page and the setup wizard.
 
 # Description
 
-**Classic UI for WoW Forever and Retail.** The vanilla (1.12) look, back on the
-modern interface, one piece at a time.
-
 Forevermore Classic UI is a reskin, not a replacement: it draws the classic art
-on Blizzard's own frames, so everything the modern UI does keeps working. Edit
-Mode, heal prediction, the auction house search, staged talent changes and
-casting from the spellbook all work as before.
+on Blizzard's own frames, so everything the modern UI does keeps working.
 
 - **Pick what you want:** every piece has its own Classic / Modern switch. Turn one off and the modern look comes back.
 - **Setup wizard:** on first login, pick a preset (everything classic, classic HUD with modern windows, or classic windows with a modern HUD), or go piece by piece with a picture of both looks.
