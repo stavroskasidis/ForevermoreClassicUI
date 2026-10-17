@@ -5,6 +5,11 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.27.6
+
+- Unit Frames (WoW Forever): the party frames' role icon is back in place
+  after the latest client update stretched it into a bar under the frame.
+
 ## 1.27.5
 
 - Controller UI (WoW Forever): the gold focus glow now hugs the vanilla
