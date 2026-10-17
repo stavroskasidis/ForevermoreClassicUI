@@ -323,6 +323,23 @@ local function IsKeyRing(frame)
 	return keyring ~= nil and frame:GetID() == keyring
 end
 
+-- The controller UI's focus glow (ns.SetGamepadBox) goes round the art's
+-- border: the frame is sized to the art, whose files have transparent
+-- margins round the border (left, top, right, bottom; measured in game, the
+-- left one under the portrait ring's overhang).
+local BOX_INSETS_GRID = { 10, 9, 6, 6 }
+local BOX_INSETS_BAG = { 9, 7, 6, 4 }
+local boxes = setmetatable({}, { __mode = "k" }) -- frame -> its box
+
+local function PlaceBox(frame, grid)
+	local box = boxes[frame]
+	if not box then return end
+	local left, top, right, bottom = unpack(grid and BOX_INSETS_GRID or BOX_INSETS_BAG)
+	box:ClearAllPoints()
+	box:SetPoint("TOPLEFT", frame, "TOPLEFT", left, -top)
+	box:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -right, bottom)
+end
+
 -- Draws the frame's art for its current slots and sizes the frame to it.
 -- Runs after Blizzard's UpdateFrameSize and UpdateCurrencyFrames, which
 -- size it for the retail layout.
@@ -345,6 +362,7 @@ local function UpdateArt(frame)
 	end
 	local extra = ShowStrip(art.strip, frame, layout.width, layout.grid and ShownTracker(frame) ~= nil)
 	frame:SetSize(layout.width, layout.height + extra)
+	PlaceBox(frame, layout.grid)
 	layouts[frame] = layout
 	return layout
 end
@@ -511,6 +529,10 @@ local function SkinFrame(frame)
 			portraitButton.Highlight:SetAllPoints(portraitButton)
 		end
 	end
+
+	boxes[frame] = CreateFrame("Frame", nil, frame)
+	PlaceBox(frame, backpackArt)
+	ns.SetGamepadBox(frame, boxes[frame])
 
 	ns.Hook(frame, "UpdateFrameSize", UpdateArt)
 	ns.Hook(frame, "UpdateItemLayout", PlaceItems)

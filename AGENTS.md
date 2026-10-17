@@ -439,8 +439,11 @@ for the token in chat or put it in a file).
   bottom of the tab row) with `ns.SetGamepadBox` (`Core.lua`), which moves
   the glow, hints and footers onto it; windows switching between a vanilla
   and a modern page (spells panel, professions) switch the box with the
-  page (nil: back to Blizzard's frame). Windows sized to their art (bags,
-  bank, loot, game menu) and the Window Frames ones (same frame) need none.
+  page (nil: back to Blizzard's frame). The glow hugs the box from outside,
+  so the box goes round the visible border, not the art's transparent
+  margins: the bag windows, sized to their art, still register one inset
+  from the frame by those margins. Windows sized to their art (bank, loot,
+  game menu) and the Window Frames ones (same frame) need none.
   A module that lays bottom tabs out of a side tab column re-places the
   `TabIndicators` buttons (see `CharacterFrame.lua`). Blizzard hides some
   windows' close buttons in that mode (B closes them).

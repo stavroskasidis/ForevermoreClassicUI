@@ -83,6 +83,7 @@ local MINIMIZE_CVAR = "spellBookMinimize"
 -- corner of the 384x512 frame (the origin frame, at the panel's left edge,
 -- see UpdateOrigin).
 local HIT_WIDTH, HIT_HEIGHT = 354, 442         -- without the transparent art right of the book and under it (the tab shelf)
+local BOX_WIDTH = 350                          -- to the border's right edge, for the controller UI's glow (seen in game)
 local TITLE_X, TITLE_Y = 198, -26              -- centre
 local CLOSE_X, CLOSE_Y = 340, -25              -- centre
 local SPELL_X, SPELL_Y = 34, -85               -- SpellButton1
@@ -568,7 +569,7 @@ local function Skin()
 	-- The round classic close button sits inside the book's border.
 	ns.PlayerSpellsPanel.Register(page, function(close)
 		Point(close, "CENTER", origin, "TOPLEFT", CLOSE_X, CLOSE_Y)
-	end, ns.CreateArtBox(book, origin, HIT_WIDTH, HIT_HEIGHT))
+	end, ns.CreateArtBox(book, origin, BOX_WIDTH, HIT_HEIGHT))
 	-- The panel manager moves the panel (centred on its own, lined up next to
 	-- other panels) when a panel opens or closes; its own frame cannot be
 	-- hooked, these are the calls that start it.
