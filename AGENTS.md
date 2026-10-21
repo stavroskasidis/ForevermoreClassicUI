@@ -87,7 +87,7 @@ src/                    the addon folder, one build for every flavor (copied as 
   README.md             user-facing description of every option (both flavors)
 addon.json              addon name, version (single source; the .toc carries @project-version@),
                         the CurseForge project id ("curseforge") and the flavors with the game
-                        folder each deploys to ("gameDir")
+                        folder(s) each deploys to ("gameDir", a name or a list)
 build.ps1               copies src\ into build\ForevermoreClassicUI\ and zips it as
                         build\ForevermoreClassicUI-<version>.zip (CurseForge layout, one file for every flavor)
 build/                  build output (git-ignored); what deploy.ps1 copies into the game
@@ -104,9 +104,11 @@ curseforge/             project page material: logo.png, logo_alt.png, logo_larg
                         logo-src\*.html by make_logo.ps1, headless Chrome / Edge), description.md
 ```
 
-Flavors: `Retail` -> `_retail_`, `Forever` -> `_classic_beta_` (declared in
-`addon.json`; Forever currently ships as the `wow_classic_beta` product and
-will need a new `gameDir` once it gets its own). One build, one `.toc` and one
+Flavors: `Retail` -> `_retail_`, `Forever` -> `_forever_` and `_classic_beta_`
+(declared in `addon.json`; since 2026-10-21 Forever ships both as its own
+`wowf` product, `_forever_` with `Wow.exe`, and still as the `wow_classic_beta`
+product, `_classic_beta_` with `WowB.exe`, both client 1.60.1; deploy.ps1
+copies into each one installed). One build, one `.toc` and one
 CurseForge zip serve every flavor: the `.toc`'s `## Interface:` line lists each
 flavor's Interface version, and the zip is uploaded once, tagged with every
 game version. Forever-only code lives in its own files (`Modules/Forever.lua`,
@@ -131,8 +133,8 @@ anything under `build/`.
   in the game install.
 - Deploy with `.\deploy.ps1` (PowerShell): it runs `build.ps1` once and
   mirrors `build\ForevermoreClassicUI\` into
-  `<WoW>\<gameDir>\Interface\AddOns\ForevermoreClassicUI\` of every flavor
-  whose game folder exists (skipping uninstalled clients); `-Flavor X`
+  `<WoW>\<gameDir>\Interface\AddOns\ForevermoreClassicUI\` of every
+  flavor's game folders that exist (skipping uninstalled clients); `-Flavor X`
   deploys to one flavor. The user then runs `/reload` in game; the addon
   cannot be tested outside the game client. A change outside the
   Forever-only files affects both flavors: say so, since the user will
@@ -228,7 +230,8 @@ for the token in chat or put it in a file).
   classic coordinates/texture coords. Read the real source before hooking or
   re-anchoring anything — names and hierarchies change between patches.
 - **WoW Forever** (`ns.IS_FOREVER`): `## Interface: 16001` (client 1.60.1, product
-  `wow_classic_beta`, exe `WowB.exe`; interface version = `%d%02d%02d` of the
+  `wowf` / exe `Wow.exe` in `_forever_`, and still `wow_classic_beta` / exe
+  `WowB.exe` in `_classic_beta_`; interface version = `%d%02d%02d` of the
   client version, so 1.60.1 -> 16001). Its UI is the *mainline* (12.x) code
   loaded with game type `camelot`: Blizzard's source is the `forever` branch of
   wow-ui-source, where `.toc` lines tagged `[AllowLoadGameType camelot]` and the

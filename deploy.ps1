@@ -6,20 +6,23 @@
 	Runs build.ps1 (src\ copied into <repo>\build\ForevermoreClassicUI\) and
 	mirrors that one build output into
 	<WoW>\<gameDir>\Interface\AddOns\ForevermoreClassicUI\ of each flavor being
-	deployed; every flavor gets the same files.
+	deployed; every flavor gets the same files. A flavor whose "gameDir" is a
+	list (Forever: its own _forever_ folder and the _classic_beta_ one) is
+	deployed into each of those folders that is installed.
 
 	Without -Flavor, every flavor declared in addon.json whose game folder
-	exists in the WoW install is deployed; flavors whose client is not
+	exists in the WoW install is deployed; game folders whose client is not
 	installed are skipped with a note. With -Flavor, that one flavor is
-	deployed and a missing game folder is an error.
+	deployed and an error is raised when none of its game folders exist.
 
 	The WoW install location (the folder that contains _retail_, _classic_, ...)
 	is asked for on the first run and stored in deploy.config.json next to this
 	script. That file is git-ignored because it is machine specific.
 
 .PARAMETER Flavor
-	Deploy only this flavor. Flavors and the game sub-folder each one deploys
-	to ("gameDir") are declared in addon.json.
+	Deploy only this flavor. Flavors and the game sub-folder(s) each one
+	deploys to ("gameDir", a name or a list of names) are declared in
+	addon.json.
 
 .PARAMETER Reset
 	Forget the stored WoW location and ask for it again.
@@ -41,9 +44,9 @@ $RepoRoot    = $PSScriptRoot
 $ConfigPath  = Join-Path $RepoRoot "deploy.config.json"
 $BuildScript = Join-Path $RepoRoot "build.ps1"
 
-# Addon name and flavor -> game folder mapping ("gameDir") come from addon.json.
-# (Forever currently ships as the "wow_classic_beta" product, _classic_beta_;
-# update its gameDir there once it gets its own product folder.)
+# Addon name and flavor -> game folder(s) mapping ("gameDir") come from addon.json.
+# (Forever ships both as its own product, _forever_, and as the
+# "wow_classic_beta" product, _classic_beta_; it deploys to every one installed.)
 $Addon     = Get-Content (Join-Path $RepoRoot "addon.json") -Raw | ConvertFrom-Json
 $AddonName = $Addon.name
 $FlavorDirs = [ordered]@{}
@@ -51,8 +54,9 @@ foreach ($property in $Addon.flavors.PSObject.Properties) {
 	if (-not $property.Value.gameDir) {
 		throw "Flavor '$($property.Name)' in addon.json has no 'gameDir'."
 	}
-	$FlavorDirs[$property.Name] = $property.Value.gameDir
+	$FlavorDirs[$property.Name] = @($property.Value.gameDir)
 }
+$AllGameDirs = @($FlavorDirs.Values | ForEach-Object { $_ })
 
 if ($Flavor -and -not $FlavorDirs.Contains($Flavor)) {
 	throw "Unknown flavor '$Flavor'. Known flavors: $($FlavorDirs.Keys -join ', ')"
@@ -71,7 +75,7 @@ function Read-WowPath {
 		}
 		# Accept a flavor folder too and step up to the install root.
 		$leaf = Split-Path $path -Leaf
-		if ($FlavorDirs.Values -contains $leaf) {
+		if ($AllGameDirs -contains $leaf) {
 			$path = Split-Path $path -Parent
 		}
 		return (Resolve-Path $path).Path
@@ -101,26 +105,23 @@ $WowPath = $config.wowPath
 
 # --- Which flavors -----------------------------------------------------------
 
-# Flavor name -> its addon folder inside the game, for every flavor to deploy.
+# "Flavor (gameDir)" -> its addon folder inside the game, for every installed
+# game folder of every flavor to deploy.
 $targets = [ordered]@{}
-if ($Flavor) {
-	$gameDir = Join-Path $WowPath $FlavorDirs[$Flavor]
-	if (-not (Test-Path $gameDir)) {
-		throw "Game folder '$gameDir' for flavor '$Flavor' does not exist in the WoW install. Run with -Reset to change the location."
-	}
-	$targets[$Flavor] = Join-Path $gameDir "Interface\AddOns\$AddonName"
-} else {
-	foreach ($name in $FlavorDirs.Keys) {
-		$gameDir = Join-Path $WowPath $FlavorDirs[$name]
+$flavorsToDeploy = if ($Flavor) { @($Flavor) } else { @($FlavorDirs.Keys) }
+foreach ($name in $flavorsToDeploy) {
+	foreach ($dir in $FlavorDirs[$name]) {
+		$gameDir = Join-Path $WowPath $dir
 		if (Test-Path $gameDir) {
-			$targets[$name] = Join-Path $gameDir "Interface\AddOns\$AddonName"
+			$targets["$name ($dir)"] = Join-Path $gameDir "Interface\AddOns\$AddonName"
 		} else {
-			Write-Host "Skipping $name`: '$gameDir' is not installed."
+			Write-Host "Skipping $name ($dir): '$gameDir' is not installed."
 		}
 	}
-	if ($targets.Count -eq 0) {
-		throw "None of the game folders ($($FlavorDirs.Values -join ', ')) exist under '$WowPath'. Run with -Reset to change the location."
-	}
+}
+if ($targets.Count -eq 0) {
+	$dirs = if ($Flavor) { $FlavorDirs[$Flavor] } else { $AllGameDirs }
+	throw "None of the game folders ($($dirs -join ', ')) exist under '$WowPath'. Run with -Reset to change the location."
 }
 
 # --- Build + deploy ---------------------------------------------------------

@@ -60,10 +60,14 @@ i.e. the game folders `deploy.ps1` copies the build into:
 	"curseforge": { "projectId": 1700272 },
 	"flavors": {
 		"Retail":  { "gameDir": "_retail_" },
-		"Forever": { "gameDir": "_classic_beta_" }
+		"Forever": { "gameDir": ["_forever_", "_classic_beta_"] }
 	}
 }
 ```
+
+`"gameDir"` is one folder name or a list of them: WoW Forever installs both
+as its own product (`_forever_`) and as the beta (`_classic_beta_`), and the
+addon is deployed into each one that is installed.
 
 ## Releasing
 
@@ -111,16 +115,16 @@ uploading.
 ```powershell
 .\deploy.ps1                 # build + deploy to every flavor whose client is installed
 .\deploy.ps1 -Flavor Retail  # just one flavor
-.\deploy.ps1 -Flavor Forever # WoW Forever (currently the _classic_beta_ folder)
+.\deploy.ps1 -Flavor Forever # WoW Forever (the _forever_ and _classic_beta_ folders)
 .\deploy.ps1 -Reset          # forget the stored WoW location and ask again
 ```
 
 The first run asks for the WoW install folder (the one that contains
 `_retail_`) and stores it in `deploy.config.json`, which is git-ignored. The
 script runs the build once and mirrors `build\ForevermoreClassicUI\` into
-each flavor's game folder (files removed here are removed there too); it
-never touches anything outside the addon folders. Without `-Flavor`, flavors
-whose game folder is not installed are skipped with a note. Type `/reload` in
+each flavor's game folder(s) (files removed here are removed there too); it
+never touches anything outside the addon folders. Game folders that are not
+installed are skipped with a note. Type `/reload` in
 game afterwards.
 
 Adding a flavor: add its Interface version to the `## Interface:` line of
