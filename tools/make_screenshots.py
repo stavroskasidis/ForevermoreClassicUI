@@ -4,7 +4,7 @@ Each picture is one feature cut out of a 1920x1080 Forever screenshot (the
 addon on, every option Classic), saved unscaled as PNG in
 curseforge/screenshots, numbered in the order to upload them.
 
-    python tools/make_screenshots.py "<WoW>/_classic_beta_/Screenshots"
+    python tools/make_screenshots.py "<WoW>/_forever_/Screenshots"
 
 Update the file names and crop boxes below for new screenshots and run it
 again.

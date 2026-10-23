@@ -7,8 +7,7 @@
 	mirrors that one build output into
 	<WoW>\<gameDir>\Interface\AddOns\ForevermoreClassicUI\ of each flavor being
 	deployed; every flavor gets the same files. A flavor whose "gameDir" is a
-	list (Forever: its own _forever_ folder and the _classic_beta_ one) is
-	deployed into each of those folders that is installed.
+	list is deployed into each of those folders that is installed.
 
 	Without -Flavor, every flavor declared in addon.json whose game folder
 	exists in the WoW install is deployed; game folders whose client is not
@@ -45,8 +44,6 @@ $ConfigPath  = Join-Path $RepoRoot "deploy.config.json"
 $BuildScript = Join-Path $RepoRoot "build.ps1"
 
 # Addon name and flavor -> game folder(s) mapping ("gameDir") come from addon.json.
-# (Forever ships both as its own product, _forever_, and as the
-# "wow_classic_beta" product, _classic_beta_; it deploys to every one installed.)
 $Addon     = Get-Content (Join-Path $RepoRoot "addon.json") -Raw | ConvertFrom-Json
 $AddonName = $Addon.name
 $FlavorDirs = [ordered]@{}

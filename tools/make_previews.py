@@ -8,7 +8,7 @@ power-of-two 32-bit TGA (uncompressed, bottom-left origin, like the other
 bundled textures) in src/Textures/Previews, then prints the Lua table entries
 (image size and file size) to paste into PreviewsForever.lua / Previews.lua.
 
-    python tools/make_previews.py "<WoW>/_classic_beta_/Screenshots"
+    python tools/make_previews.py "<WoW>/_forever_/Screenshots"
 
 Take new screenshots with the default UI scale, one window open at a time,
 update the file names and crop boxes below, and run it again.

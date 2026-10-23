@@ -9,7 +9,7 @@
 			"gameDir": "_retail_"
 		},
 		"Forever": {
-			"gameDir": ["_forever_", "_classic_beta_"]
+			"gameDir": "_forever_"
 		}
 	}
 }

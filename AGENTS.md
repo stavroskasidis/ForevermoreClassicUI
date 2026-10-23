@@ -104,11 +104,11 @@ curseforge/             project page material: logo.png, logo_alt.png, logo_larg
                         logo-src\*.html by make_logo.ps1, headless Chrome / Edge), description.md
 ```
 
-Flavors: `Retail` -> `_retail_`, `Forever` -> `_forever_` and `_classic_beta_`
-(declared in `addon.json`; since 2026-10-21 Forever ships both as its own
-`wowf` product, `_forever_` with `Wow.exe`, and still as the `wow_classic_beta`
-product, `_classic_beta_` with `WowB.exe`, both client 1.60.1; deploy.ps1
-copies into each one installed). One build, one `.toc` and one
+Flavors: `Retail` -> `_retail_`, `Forever` -> `_forever_` (declared in
+`addon.json`; Forever is its own `wowf` product since 2026-10-21, and its
+beta, the `wow_classic_beta` product in `_classic_beta_`, has ended; a
+`"gameDir"` may still be a list, deploy.ps1 copies into each one installed).
+One build, one `.toc` and one
 CurseForge zip serve every flavor: the `.toc`'s `## Interface:` line lists each
 flavor's Interface version, and the zip is uploaded once, tagged with every
 game version. Forever-only code lives in its own files (`Modules/Forever.lua`,
@@ -230,8 +230,7 @@ for the token in chat or put it in a file).
   classic coordinates/texture coords. Read the real source before hooking or
   re-anchoring anything — names and hierarchies change between patches.
 - **WoW Forever** (`ns.IS_FOREVER`): `## Interface: 16001` (client 1.60.1, product
-  `wowf` / exe `Wow.exe` in `_forever_`, and still `wow_classic_beta` / exe
-  `WowB.exe` in `_classic_beta_`; interface version = `%d%02d%02d` of the
+  `wowf` / exe `Wow.exe` in `_forever_`; interface version = `%d%02d%02d` of the
   client version, so 1.60.1 -> 16001). Its UI is the *mainline* (12.x) code
   loaded with game type `camelot`: Blizzard's source is the `forever` branch of
   wow-ui-source, where `.toc` lines tagged `[AllowLoadGameType camelot]` and the
