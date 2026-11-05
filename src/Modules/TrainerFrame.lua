@@ -389,7 +389,17 @@ local function OnRowInit(row)
 	-- Vanilla let the name run free when a sub text followed it and capped
 	-- it (no wrap, so it truncates) otherwise.
 	local sub = row.nameSubText and row.nameSubText:GetText()
-	row.name:SetWidth((sub and sub ~= "") and 0 or SKILL_TEXT_WIDTH / RowScale(row))
+	local hasSub = sub ~= nil and sub ~= ""
+	row.name:SetWidth(hasSub and 0 or SKILL_TEXT_WIDTH / RowScale(row))
+	-- Forever's Init ends in UpdateNameWidth, which fixes the sub text's width
+	-- to what it measures (hiding it when it does not fit beside the price):
+	-- on a row's first Init that measure is in the template's font, before
+	-- SkinRow enlarged it, so "(Rank 2)" showed as "(..." until the next Init.
+	-- The sub text fits its text here instead, like the name above.
+	if row.nameSubText then
+		row.nameSubText:SetWidth(0)
+		row.nameSubText:SetShown(hasSub)
+	end
 	ColorRow(row, row:IsMouseOver())
 end
 
