@@ -5,6 +5,12 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.28.1
+
+- Spellbook (WoW Forever): pages fill both columns again after a client update,
+  which had cut them to six spells down the left column. A tab's first page
+  holds ten spells, the pages after it twelve.
+
 ## 1.28.0
 
 - New Swing Timers option (WoW Forever): the weapon swing timer bars in the
