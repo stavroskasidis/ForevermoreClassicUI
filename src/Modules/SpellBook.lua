@@ -20,15 +20,18 @@
 	re-skinned in place and nothing on it is replaced or driven from here:
 
 	  * the spells are listed by a PagedCondensedVerticalGridContentFrame:
-	    three columns of 220x60 items (70px a row with the padding), a 51px
-	    header (61px) at the start of each skill line, split into views by
+	    two columns of 220x60 items (70px a row with the padding), a 60px
+	    header (70px) at the start of each skill line, split into views by
 	    the view frame's height. Its columns, views per page and data provider
 	    are Lua fields / calls that addon code must not touch (the item
 	    frames it builds afterwards would carry taint and casting would be
-	    blocked). Only the view's height is set: 345px holds a header plus
-	    four rows, or four rows, but never five, so every view gets twelve
-	    spells like a vanilla page. After each Layout of the view the items
-	    are re-anchored into the vanilla page and the headers faded out,
+	    blocked), and Blizzard sets the view's width on every show. Only the
+	    view's height is set: 455px holds six rows but never seven, so a view
+	    gets twelve spells like a vanilla page. A header takes a row, which
+	    no height can make up for (seven rows would fit on the other pages):
+	    the first page of a skill line gets ten. After each Layout of the
+	    view the items are re-anchored into the vanilla page and the headers
+	    faded out,
 	  * a page shows one view only in Blizzard's single-page ("minimized")
 	    mode, which is chosen from the spellBookMinimize CVar when
 	    Blizzard_PlayerSpells loads. The CVar is set at login (its previous
@@ -39,7 +42,7 @@
 	    instead of its NineSlice, portrait and title (PlayerSpellsPanel.lua,
 	    shared with the Talents option; the talents page gets the retail
 	    chrome back unless that option draws its own frame). The panel keeps
-	    Blizzard's compact size (809x720). On its own the manager centres
+	    Blizzard's compact size (577x720). On its own the manager centres
 	    it; the book is then drawn where the character frame opens (see
 	    OriginX), next to other panels at the panel's left edge. It is not
 	    resized: the page holds a secure
@@ -100,9 +103,9 @@ local PAGE_TEXT_X, PAGE_TEXT_Y, PAGE_TEXT_WIDTH = 178, -416, 102 -- bottom centr
 local BAND_Y, BAND_LEFT, BAND_RIGHT = -55, 84, 338
 local BAND_ICON_GAP = 4                           -- between a controller UI prompt and its control
 
--- See the header: 345px takes a header and four rows (61 + 4 * 70 = 341) or
--- four rows (280), but not five (350).
-local VIEW_WIDTH, VIEW_HEIGHT = COLUMN_STRIDE + ITEM_WIDTH, 345
+-- See the header: 455px takes six rows (6 * 70 = 420) but not seven (490), or
+-- a header and five rows (70 + 5 * 70 = 420).
+local VIEW_HEIGHT = 455
 
 local SUB_TEXT_COLOR = { 0.35, 0.2, 0 }                                   -- SubSpellFont
 local PASSIVE_COLOR = PASSIVE_SPELL_FONT_COLOR or { r = 0.77, g = 0.64, b = 0 } -- 1.12's value
@@ -383,7 +386,7 @@ local function SkinItem(item)
 end
 
 -- After StaticGridLayoutFrame:Layout of a view (right before Blizzard
--- initializes the items): the items Blizzard placed in its three columns go
+-- initializes the items): the items Blizzard placed in its two columns go
 -- into the vanilla page in their order, 1-6 down the left column and 7-12
 -- down the right; the group headers are faded out.
 local function LayoutView(view)
@@ -475,7 +478,7 @@ local function SkinPage()
 	paged:SetPoint("TOPLEFT", origin, "TOPLEFT", 0, 0)
 	paged:SetPoint("BOTTOMRIGHT", origin, "TOPLEFT", HIT_WIDTH, -HIT_HEIGHT)
 	for _, view in ipairs(paged.ViewFrames) do
-		view:SetSize(VIEW_WIDTH, VIEW_HEIGHT)
+		view:SetHeight(VIEW_HEIGHT)
 		ns.Hook(view, "Layout", LayoutView)
 	end
 	Point(paged.ViewFrames[1], "TOPLEFT", origin, "TOPLEFT", SPELL_X, SPELL_Y)

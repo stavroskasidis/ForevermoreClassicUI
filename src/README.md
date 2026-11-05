@@ -209,8 +209,9 @@ them only works while Blizzard's own code drives the list, so the addon never
 changes the list's settings): the vanilla book is drawn at the left edge of
 the panel while that page is shown (the panel keeps Blizzard's compact size,
 so the book opens where Blizzard's compact spellbook does), the list's page
-frame is given a height that makes Blizzard's own paging put exactly twelve
-spells on each page, and after each layout the spells are moved into the
+frame is given a height that makes Blizzard's own paging put twelve spells on
+each page (ten on a skill line's first page, where Blizzard's hidden section
+header takes a row), and after each layout the spells are moved into the
 vanilla two-column page.
 
 `Modules/TalentFrame.lua` is the Talents option. Forever's talents are the
