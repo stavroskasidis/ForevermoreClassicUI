@@ -5,6 +5,14 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.28.3
+
+- Character Window (WoW Forever): the inspect window's tabs show their names
+  (Character, Honor, Guild), and its Honor tab no longer draws the rank over
+  the season name.
+- Quest Log: Share Quest clicked in combat now shares the quest when combat
+  ends instead of failing.
+
 ## 1.28.2
 
 - Trainer Window (WoW Forever): the "(Rank n)" text next to a skill's name
