@@ -9,7 +9,7 @@
 	under it, the equipment slots down both sides and along the bottom in the
 	classic UI-Quickslot2 frames, the model over the whole dark page (1.12's
 	inspect window had no stat boxes), the round close button and the tabs
-	under the frame (Character, and Guild when the player has one). The
+	under the frame (Character, Honor, and Guild when the player has one). The
 	guild page gets the plain frame (UI-Character-General-*), as the
 	character window's other pages do.
 
@@ -221,14 +221,35 @@ local function PlaceLines()
 	end
 end
 
+-- The Honor page (InspectPVPFrame): Blizzard anchors the rank line's top 10px
+-- above the season line's bottom, so "Season 1" and the rank title overlap;
+-- the rank line goes under it (the rule, the stats under the ring and the
+-- lines under them follow it down).
+local RANK_GAP = 2
+
+local function PlacePvP()
+	local info = InspectPVPFrame and InspectPVPFrame.MainInfoFrame
+	if not (info and info.CurrentSeasonField and info.CurrentRankField) then return end
+	Point(info.CurrentRankField, "TOP", info.CurrentSeasonField, "BOTTOM", 0, -RANK_GAP)
+end
+
 ---------------------------------------------------------------------------
 -- Tabs
 ---------------------------------------------------------------------------
 
--- Blizzard lays the tabs out in InspectFrame_Show (UpdateTabLayout) and
--- shows or hides the guild tab once the inspect data is in (UpdateTabs).
+-- The icon tabs carry no page name (the character window's tabs are named
+-- by theirs), so their labels go by tab ID (Blizzard's
+-- INSPECT_MODE_TAB_INDEX_*); the PvP tab is 1.12's "Honor".
+local TAB_LABELS = {
+	[1] = CHARACTER or "Character",
+	[2] = HONOR or "Honor",
+	[3] = GUILD or "Guild",
+}
+
+-- Blizzard lays the tabs out at load (InitializeModeTabLayout) and shows or
+-- hides the guild tab once the inspect data is in (UpdateTabs).
 local function LayoutTabs()
-	CW.LayoutModeTabs(frame, origin)
+	CW.LayoutModeTabs(frame, origin, TAB_LABELS)
 end
 
 ---------------------------------------------------------------------------
@@ -242,7 +263,8 @@ local function Skin()
 	PlaceSlots()
 	PlaceModel()
 	PlaceLines()
-	ns.Hook(frame, "UpdateTabLayout", LayoutTabs)
+	PlacePvP()
+	ns.Hook(frame, "InitializeModeTabLayout", LayoutTabs)
 	ns.Hook(frame, "UpdateTabs", LayoutTabs)
 	frame:HookScript("OnShow", LayoutTabs)
 	LayoutTabs()

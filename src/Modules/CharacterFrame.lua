@@ -358,7 +358,6 @@ local TAB_LABELS = {
 	PVPRankFrame = HONOR or "Honor", -- 1.12's name for the tab ("Player vs. Player" is too wide for the row)
 	TokenFrame = CURRENCY or "Currency",
 	StatisticsFrame = STATISTICS or "Statistics",
-	GuildFrame = GUILD or "Guild", -- the inspect window's (CharacterInspect.lua)
 }
 local TAB_ART = { "Background", "Icon", "SelectedTexture", "HighlightTexture" }
 
@@ -454,14 +453,15 @@ end
 
 -- After Blizzard's tab layout (a column down the frame's right side): the
 -- shown tabs of `owner` (the character or the inspect window) go into a row
--- under its art (`ownerOrigin`), each sized to its label.
-local function LayoutModeTabs(owner, ownerOrigin)
+-- under its art (`ownerOrigin`), each sized to its label. `labels` (by tab
+-- ID) names tabs that carry no page name (the inspect window's).
+local function LayoutModeTabs(owner, ownerOrigin, labels)
 	local tabs = owner.ModeTabs and owner.ModeTabs.Tabs
 	if not tabs then return end
 	local previous
 	for _, tab in ipairs(tabs) do
 		if tab:IsShown() then
-			local skin = SkinTab(tab)
+			local skin = SkinTab(tab, labels and labels[tab:GetID()])
 			local width = math.max(1, math.ceil(skin.text:GetStringWidth()) - 2 * TAB_TEXT_INTO_END)
 			skin.middle:SetWidth(width)
 			tab:SetSize(width + 2 * TAB_END, TAB_HEIGHT)
