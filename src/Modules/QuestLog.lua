@@ -29,7 +29,9 @@
 	    quest details and the popup, so they are only drawn here while none
 	    of those is shown and drawn again when they close,
 	  * Abandon Quest / Share Quest / Track Quest call Blizzard's
-	    QuestMapQuestOptions_* (the map's own quest menu).
+	    QuestMapQuestOptions_* (the map's own quest menu); a Share Quest
+	    clicked in combat, where the game blocks it from addon code, waits
+	    for the end of combat.
 
 	It opens from the quest log key (override bindings on the key's keys
 	click a named button: a binding can only click a button by name, the one
@@ -240,6 +242,33 @@ end
 ---------------------------------------------------------------------------
 -- The list
 ---------------------------------------------------------------------------
+
+-- A share clicked in combat waits for the end of combat: the game blocks
+-- QuestLogPushQuest from addon code there ("Interface action failed",
+-- 2026-11-07), and Blizzard's own Share button cannot be clicked for it,
+-- since it reads the quest from a Lua field of its details frame. Only the
+-- last quest clicked is shared, if it can still be shared by then.
+local queuedShare
+
+local function ShareQueuedQuest()
+	local questID = queuedShare
+	queuedShare = nil
+	if C_QuestLog.GetLogIndexForQuestID(questID) and C_QuestLog.IsPushableQuest(questID) and IsInGroup() then
+		QuestMapQuestOptions_ShareQuest(questID)
+	end
+end
+
+local function ShareQuest(questID)
+	if not InCombatLockdown() then
+		QuestMapQuestOptions_ShareQuest(questID)
+		return
+	end
+	if not queuedShare then
+		ns:RunOutOfCombat(ShareQueuedQuest)
+	end
+	queuedShare = questID
+	ns.Print("The quest will be shared when combat ends.")
+end
 
 local function UpdateButtons()
 	local questID = selectedQuestID
@@ -763,7 +792,7 @@ local function CreateWindow()
 	art.share:SetPoint("RIGHT", exit, "LEFT", -2, 0)
 	art.share:SetScript("OnClick", function()
 		if selectedQuestID and QuestMapQuestOptions_ShareQuest then
-			QuestMapQuestOptions_ShareQuest(selectedQuestID)
+			ShareQuest(selectedQuestID)
 		end
 	end)
 

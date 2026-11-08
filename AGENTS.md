@@ -307,6 +307,11 @@ for the token in chat or put it in a file).
   work in combat is a `SecureActionButtonTemplate` with `type` "click" and
   `clickbutton` the panel's own `CloseButton` (created out of combat; it is
   protected and makes its parent protected): see the professions window.
+- `QuestLogPushQuest` is blocked from addon code in combat and works out of
+  it (2026-11-07), so the quest log queues a share clicked in combat for the
+  end of combat. Clicking Blizzard's Share button securely is no way round
+  it: its handler reads the quest from `DetailsFrame.questID`, a Lua field the
+  addon must not write.
 - A panel with a secure descendant is protected: no `SetSize` / `SetPoint`
   / `EnableMouse` / `SetHitRectInsets` on it in combat, and hooks that run
   when it shows (a keybinding can show it in combat) must defer those with
