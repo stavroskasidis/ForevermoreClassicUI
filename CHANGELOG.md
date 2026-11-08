@@ -5,6 +5,11 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.28.4
+
+- Spellbook (WoW Forever): a tab's first page holds twelve spells like the
+  others, so a skill line of up to twelve spells fits on one page.
+
 ## 1.28.3
 
 - Character Window (WoW Forever): the inspect window's tabs show their names
