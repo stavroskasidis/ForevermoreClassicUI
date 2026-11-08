@@ -26,12 +26,15 @@
 	    are Lua fields / calls that addon code must not touch (the item
 	    frames it builds afterwards would carry taint and casting would be
 	    blocked), and Blizzard sets the view's width on every show. Only the
-	    view's height is set: 455px holds six rows but never seven, so a view
-	    gets twelve spells like a vanilla page. A header takes a row, which
-	    no height can make up for (seven rows would fit on the other pages):
-	    the first page of a skill line gets ten. After each Layout of the
-	    view the items are re-anchored into the vanilla page and the headers
-	    faded out,
+	    view's height is set, so a view gets twelve spells like a vanilla
+	    page. A header takes a row: a height that fits the header and six
+	    rows fits seven rows on the pages after it, unless the skill line
+	    has too few spells left for a seventh row (Blizzard fills a column
+	    only to half the spells left). So the height is chosen for each list,
+	    right before Blizzard splits it (see ViewHeightFor): the tall one for
+	    a skill line of up to 24 spells (12 + 12), else the short one, whose
+	    first page gets ten. After each Layout of the view the items are
+	    re-anchored into the vanilla page and the headers faded out,
 	  * a page shows one view only in Blizzard's single-page ("minimized")
 	    mode, which is chosen from the spellBookMinimize CVar when
 	    Blizzard_PlayerSpells loads. The CVar is set at login (its previous
@@ -103,9 +106,11 @@ local PAGE_TEXT_X, PAGE_TEXT_Y, PAGE_TEXT_WIDTH = 178, -416, 102 -- bottom centr
 local BAND_Y, BAND_LEFT, BAND_RIGHT = -55, 84, 338
 local BAND_ICON_GAP = 4                           -- between a controller UI prompt and its control
 
--- See the header: 455px takes six rows (6 * 70 = 420) but not seven (490), or
--- a header and five rows (70 + 5 * 70 = 420).
-local VIEW_HEIGHT = 455
+-- See the header. 455px takes six rows (6 * 70 = 420) but not seven (490), or
+-- a header and five rows (70 + 5 * 70 = 420). 500px takes a header and six
+-- rows (490) but not seven (560), and seven rows without a header.
+local VIEW_HEIGHT, VIEW_HEIGHT_TALL = 455, 500
+local TALL_MAX_SPELLS = 24 -- the most a skill line can have for the pages after the first to stay at six rows
 
 local SUB_TEXT_COLOR = { 0.35, 0.2, 0 }                                   -- SubSpellFont
 local PASSIVE_COLOR = PASSIVE_SPELL_FONT_COLOR or { r = 0.77, g = 0.64, b = 0 } -- 1.12's value
@@ -406,6 +411,38 @@ local function LayoutView(view)
 	end
 end
 
+-- The view height for a spell list (see the header): the tall one when the
+-- list is one skill line under its header with at most TALL_MAX_SPELLS
+-- spells (its first page then holds twelve and every later page at most
+-- six rows), else the short one. Nil for data that is not a spell list.
+local function ViewHeightFor(data)
+	if type(data) ~= "table" then return end
+	local group = data[1]
+	if type(group) ~= "table" or type(group.elements) ~= "table" then return end
+	local first, header = group.elements[1], group.header
+	local isSpells = (type(header) == "table" and header.spellGroup ~= nil)
+		or (type(first) == "table" and first.spellBank ~= nil)
+	if not isSpells then return end
+	if #data == 1 and header and #group.elements <= TALL_MAX_SPELLS then
+		return VIEW_HEIGHT_TALL
+	end
+	return VIEW_HEIGHT
+end
+
+-- After CreateDataProvider: the spellbook builds a new provider for every
+-- list it shows (UpdateDisplayedSpells, the search) and passes it to the
+-- paged frame's SetDataProvider right after, which splits the list by the
+-- view's height. That call is Blizzard's and must stay so (see the header),
+-- so the height is set here, between the two. The view holds no secure
+-- widget; its height only feeds the split (the items are re-anchored).
+local function OnDataProviderCreated(data)
+	local height = ViewHeightFor(data)
+	if not height then return end
+	for _, view in ipairs(page.PagedSpellsFrame.ViewFrames) do
+		view:SetHeight(height)
+	end
+end
+
 ---------------------------------------------------------------------------
 -- Page furniture: paging controls, search box, settings
 ---------------------------------------------------------------------------
@@ -481,6 +518,7 @@ local function SkinPage()
 		view:SetHeight(VIEW_HEIGHT)
 		ns.Hook(view, "Layout", LayoutView)
 	end
+	ns.Hook("CreateDataProvider", OnDataProviderCreated)
 	Point(paged.ViewFrames[1], "TOPLEFT", origin, "TOPLEFT", SPELL_X, SPELL_Y)
 
 	local controls = paged.PagingControls
