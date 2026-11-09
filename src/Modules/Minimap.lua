@@ -39,6 +39,8 @@
 	    regions are moved into a hidden frame, so the classic textures set on
 	    the buttons show instead. Its calendar refreshes the day through the
 	    button's SetDate method rather than the GameTimeFrame_SetDate global.
+	  * Other addons' ring buttons placed before the map was shrunk to the
+	    classic size are moved onto the classic ring (MoveAddonRingButtons).
 	  * Everything touched is widget state; no Lua fields are written on
 	    Blizzard's frames.
 
@@ -132,6 +134,37 @@ local function LayoutCluster()
 
 	if cluster.InstanceDifficulty then
 		Point(cluster.InstanceDifficulty, "TOPLEFT", container, "TOPLEFT", 22, -25)
+	end
+end
+
+-- Other addons' minimap buttons (LibDBIcon and look-alikes) sit on the ring
+-- at "half the map's width + a margin" from the map's centre, worked out from
+-- Minimap:GetWidth() when they are placed. Addons that load before this one
+-- place them at PLAYER_LOGIN before the map is shrunk to the classic size,
+-- which leaves them floating outside the ring; each one anchored by its
+-- centre to the map's centre, outside the map's inner area, is moved in by
+-- the change of the map's radius (angle and margin kept). Buttons placed
+-- later (dragging, late registration) measure the classic map themselves.
+local function MoveAddonRingButtons(oldWidth, oldHeight)
+	local newWidth, newHeight = Minimap:GetSize()
+	if not oldWidth or not newWidth then return end
+	local deltaX, deltaY = (newWidth - oldWidth) / 2, (newHeight - oldHeight) / 2
+	if deltaX == 0 and deltaY == 0 then return end
+	local innerX, innerY = oldWidth * 0.35, oldHeight * 0.35
+
+	for _, child in ipairs({ Minimap:GetChildren() }) do
+		if not child:IsForbidden() and not (InCombatLockdown() and child:IsProtected())
+			and child:GetNumPoints() == 1 then
+			local ok, point, relativeTo, relativePoint, x, y = pcall(child.GetPoint, child, 1)
+			if ok and point == "CENTER" and relativeTo == Minimap and relativePoint == "CENTER"
+				and x and y and (x * x) / (innerX * innerX) + (y * y) / (innerY * innerY) > 1 then
+				local distance = math.sqrt(x * x + y * y)
+				local scaleX = (distance + deltaX) / distance
+				local scaleY = (distance + deltaY) / distance
+				child:ClearAllPoints()
+				child:SetPoint("CENTER", Minimap, "CENTER", x * scaleX, y * scaleY)
+			end
+		end
 	end
 end
 
@@ -349,13 +382,24 @@ local function ApplyIndicators()
 	ns.Hook("MiniMapIndicatorFrame_UpdatePosition", LayoutIndicators)
 end
 
--- Addon compartment: styled like a classic minimap button on the left side
--- of the ring, below the tracking button. WoW Forever's SetHeaderUnderneath
--- anchors it to the calendar, so it is re-anchored after that too.
+-- Addon compartment: styled like a classic minimap button, drawn smaller and
+-- placed at the left end of the zone text bar, as the modern header has it
+-- at the end of its bar (the right end is the world map button's). WoW
+-- Forever's SetHeaderUnderneath anchors it to the calendar, so it is
+-- re-anchored after that too.
+local COMPARTMENT_SCALE = 0.8
+-- Ring centre from the container's top left corner: the bar's art starts
+-- ~20px in from the container's edge (measured in game 2026-11-09).
+local COMPARTMENT_X = 7
 local function AnchorAddonCompartment()
 	local button = AddonCompartmentFrame
 	if not button then return end
-	Point(button, "TOPLEFT", MinimapBackdrop, "TOPLEFT", 4, -82)
+	button:SetScale(COMPARTMENT_SCALE)
+	-- The ring is centred on the icon, at the button's top left + 16,-16;
+	-- the offsets are in the button's own (scaled) units.
+	Point(button, "TOPLEFT", MinimapCluster.MinimapContainer, "TOPLEFT",
+		(COMPARTMENT_X - COMPARTMENT_SCALE * 16) / COMPARTMENT_SCALE,
+		(ZONE_TEXT_Y + COMPARTMENT_SCALE * 16) / COMPARTMENT_SCALE)
 end
 
 local function ApplyAddonCompartment()
@@ -584,7 +628,9 @@ function module:Apply()
 		MinimapCluster.InstanceDifficulty:SetParent(MinimapCluster.MinimapContainer)
 	end
 
+	local oldWidth, oldHeight = Minimap:GetSize()
 	LayoutCluster()
+	xpcall(MoveAddonRingButtons, geterrorhandler(), oldWidth, oldHeight)
 	ApplyFrameArt()
 	ApplyZoneText()
 	ApplyTracking()
