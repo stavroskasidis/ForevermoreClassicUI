@@ -5,6 +5,12 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.28.5
+
+- Minimap: other addons' minimap buttons sit on the classic ring instead of
+  floating outside it, and the Addons button moves to the left end of the
+  zone text bar.
+
 ## 1.28.4
 
 - Spellbook (WoW Forever): a tab's first page holds twelve spells like the
