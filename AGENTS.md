@@ -23,6 +23,9 @@ aliases next to `/fmcui` / `/forevermore` (never `/fcui`: other addons use it).
 src/                    the addon folder, one build for every flavor (copied as is into build\ForevermoreClassicUI\)
   ForevermoreClassicUI.toc  the one .toc for every flavor (## Interface: 120100, 16001)
   Core.lua              namespace, textures/colours, module registry, mirror bars, lifecycle, /fmcui
+  VersionCheck.lua      newer version notice (not a module, no option): addons have no internet, so the version is
+                        sent on the GUILD / group addon channels (prefix FMCUI) at login and on joining a group;
+                        a newer one heard is printed once a session and saved (db.newestVersion) for later logins
   Options.lua           Settings panel page (canvas: every top-level module by group, with a picture of its set look
                         and a Modern / Classic switch; reload banner)
   Wizard.lua            setup wizard (first login, "/fmcui setup"); ns.UI: widgets, option groups

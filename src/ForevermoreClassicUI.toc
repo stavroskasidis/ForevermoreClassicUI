@@ -10,6 +10,7 @@
 ## X-License: MIT
 
 Core.lua
+VersionCheck.lua
 Modules\UnitFrames.lua
 Modules\Portraits.lua
 Modules\HealthBars.lua

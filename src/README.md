@@ -185,6 +185,16 @@ The game menu keeps Blizzard's button list, rebuilt on every show; its
 re-stack them the vanilla way, and the vanilla dialog box and header plate
 are drawn behind them in place of the faded metal border.
 
+## New version notice
+
+The game gives addons no internet access, so the addon learns about a newer
+version from other players who run it: it shares its version with your guild
+and your group (as a hidden addon message, once at login and when you join a
+group), and when someone has a newer one, a line in the chat tells you which
+version is out. The notice comes back at every login until you update. Alpha
+and beta versions are only announced to players who run an alpha or beta
+themselves.
+
 ## WoW Forever
 
 Forever's UI is the retail 12.x UI with a small "camelot" game-type overlay
@@ -335,6 +345,7 @@ skin).
 ```
 ForevermoreClassicUI.toc Interface versions (retail and Forever), file list
 Core.lua                 saved variables, module registry, helpers
+VersionCheck.lua         newer version notice (versions shared on the guild / group addon channels)
 Previews.lua             the modern / classic pictures of every option (wizard and options page)
 PreviewsForever.lua      Forever only: its own modern pictures and window screenshots
 Textures/Previews/       screenshots of the windows in both looks (Forever)
