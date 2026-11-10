@@ -99,6 +99,68 @@ local function ClassicBannerFor(icon)
 	return nil, atlas
 end
 
+-- Classic banner for a unit's PvP state, read from the unit itself: used
+-- when the icon's shown state or atlas read back secret (the player frame's
+-- icon does where the target frame's does not). Mirrors UnitFrameUtil's
+-- choice (free-for-all, else faction, swapped for a mercenary); nil when the
+-- unit's state is secret too or the banner file is missing.
+local function ClassicBannerForUnit(unit, checkMercenary)
+	if type(unit) ~= "string" then return nil end
+	local ffa = UnitIsPVPFreeForAll(unit)
+	if IsSecret(ffa) then return nil end
+	local file
+	if ffa then
+		file = T.PVP_FFA
+	else
+		local faction = UnitFactionGroup(unit)
+		if IsSecret(faction) then return nil end
+		if checkMercenary and UnitIsMercenary then
+			local mercenary = UnitIsMercenary(unit)
+			if IsSecret(mercenary) then return nil end
+			if mercenary then
+				faction = (faction == "Horde" and "Alliance") or (faction == "Alliance" and "Horde") or faction
+			end
+		end
+		file = (faction == "Horde" and T.PVP_HORDE) or (faction == "Alliance" and T.PVP_ALLIANCE) or nil
+	end
+	if file and TextureExists(file) then
+		return file
+	end
+	return nil
+end
+
+-- Puts the classic banner (or, without one, Blizzard's small icon) on a
+-- Camelot PvP icon Blizzard has just updated. bannerPoint places the 64x64
+-- banner, smallPoint centres the small icon on the banner's spot.
+local function ClassicPvPIcon(icon, unit, checkMercenary, bannerPoint, smallPoint)
+	local shown = icon:IsShown()
+	local file
+	if IsSecret(shown) then
+		file = ClassicBannerForUnit(unit, checkMercenary)
+	else
+		if not shown then return false end
+		local atlas
+		file, atlas = ClassicBannerFor(icon)
+		if not file then
+			if IsSecret(atlas) or atlas == nil then
+				-- Atlas unreadable (or already the banner): pick it from the unit.
+				file = ClassicBannerForUnit(unit, checkMercenary)
+				if not file and atlas == nil then return false end -- already classic
+			end
+		end
+	end
+
+	icon:SetScale(1)
+	if file then
+		SetTexture(icon, file)
+		icon:SetSize(64, 64)
+		bannerPoint(icon)
+	else
+		smallPoint(icon)
+	end
+	return true
+end
+
 -- Level text in the frame art's circle: no Camelot background circle and the
 -- classic number font instead of the large white one.
 local function ClassicLevelText(text, circle)
@@ -121,6 +183,14 @@ local function ClassicPlayerLevelColor()
 	end
 end
 
+local function PlayerBannerPoint(icon)
+	Point(icon, "TOPLEFT", PlayerFrame, "TOPLEFT", 18 + PLAYER_OFFSET_X, -20 + PLAYER_OFFSET_Y)
+end
+
+local function PlayerSmallIconPoint(icon)
+	Point(icon, "CENTER", PlayerFrame, "TOPLEFT", 50 + PLAYER_OFFSET_X, -52 + PLAYER_OFFSET_Y)
+end
+
 local function ClassicPlayerPvPIcon()
 	local main = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain
 	local icon, circle = main.PvpBackgroundIcon, main.PvpBackgroundCircle
@@ -129,29 +199,8 @@ local function ClassicPlayerPvPIcon()
 	if circle then
 		circle:Hide()
 	end
-	local shown = icon:IsShown()
-	if IsSecret(shown) then
-		-- The banner cannot be chosen; Blizzard's small icon, if shown, goes
-		-- to the classic spot.
-		icon:SetScale(1)
-		Point(icon, "CENTER", PlayerFrame, "TOPLEFT", 50 + PLAYER_OFFSET_X, -52 + PLAYER_OFFSET_Y)
-		return
-	end
-	if not shown then return end
-
-	local file, atlas = ClassicBannerFor(icon)
-	if not file and not atlas then return end -- already classic
-
-	icon:SetScale(1)
-	if file then
-		SetTexture(icon, file)
-		icon:SetSize(64, 64)
-		Point(icon, "TOPLEFT", PlayerFrame, "TOPLEFT", 18 + PLAYER_OFFSET_X, -20 + PLAYER_OFFSET_Y)
-	else
-		-- Keep Blizzard's small icon, centred where the classic banner sits.
-		Point(icon, "CENTER", PlayerFrame, "TOPLEFT", 50 + PLAYER_OFFSET_X, -52 + PLAYER_OFFSET_Y)
-	end
-	if PlayerPVPTimerText then
+	local placed = ClassicPvPIcon(icon, "player", true, PlayerBannerPoint, PlayerSmallIconPoint)
+	if placed and PlayerPVPTimerText then
 		Point(PlayerPVPTimerText, "CENTER", PlayerFrame, "TOPLEFT", 38 + PLAYER_OFFSET_X, -8 + PLAYER_OFFSET_Y)
 	end
 end
@@ -177,25 +226,13 @@ local function ClassicTargetPvPIcon(frame)
 	if circle then
 		circle:Hide()
 	end
-	local shown = icon:IsShown()
-	if IsSecret(shown) then
-		icon:SetScale(1)
-		Point(icon, "CENTER", frame, "TOPRIGHT", -29 + TARGET_OFFSET_X, -52 + TARGET_OFFSET_Y)
-		return
-	end
-	if not shown then return end
-
-	local file, atlas = ClassicBannerFor(icon)
-	if not file and not atlas then return end
-
-	icon:SetScale(1)
-	if file then
-		SetTexture(icon, file)
-		icon:SetSize(64, 64)
-		Point(icon, "TOPRIGHT", frame, "TOPRIGHT", 3 + TARGET_OFFSET_X, -20 + TARGET_OFFSET_Y)
-	else
-		Point(icon, "CENTER", frame, "TOPRIGHT", -29 + TARGET_OFFSET_X, -52 + TARGET_OFFSET_Y)
-	end
+	ClassicPvPIcon(icon, frame.unit, false,
+		function(region)
+			Point(region, "TOPRIGHT", frame, "TOPRIGHT", 3 + TARGET_OFFSET_X, -20 + TARGET_OFFSET_Y)
+		end,
+		function(region)
+			Point(region, "CENTER", frame, "TOPRIGHT", -29 + TARGET_OFFSET_X, -52 + TARGET_OFFSET_Y)
+		end)
 end
 
 local function SkinTargetStyleFrame(frame, hasPvP)
