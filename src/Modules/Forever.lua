@@ -12,6 +12,7 @@
 	    (<ContentMain>.LevelBackgroundCircle, large white font) in the bottom
 	    corner of the frame. Classic shows it in the frame art's own circle,
 	    where the shared Unit Frames module already anchors the level text.
+	    Target-style frames show the circle again from CheckBattlePet.
 	  * PvP status is a small faction circle (PvpBackgroundIcon: in
 	    PlayerFrameContentMain on the player frame, in
 	    TargetFrameContentContextual on target-style frames; before build
@@ -239,6 +240,13 @@ local function SkinTargetStyleFrame(frame, hasPvP)
 	if not frame or not frame.TargetFrameContent then return end
 	local main = frame.TargetFrameContent.TargetFrameContentMain
 	ClassicLevelText(main.LevelText, main.LevelBackgroundCircle)
+	-- Since build 70888 Camelot's CheckBattlePet shows the circle again on
+	-- every unit change (hidden only for battle pets, with the level).
+	if main.LevelBackgroundCircle and frame.CheckBattlePet then
+		ns.Hook(frame, "CheckBattlePet", function()
+			main.LevelBackgroundCircle:Hide()
+		end)
+	end
 	if hasPvP then
 		ns.Hook(frame, "CheckFaction", ClassicTargetPvPIcon)
 		ClassicTargetPvPIcon(frame)
