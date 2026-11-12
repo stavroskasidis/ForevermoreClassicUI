@@ -5,6 +5,12 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.29.2
+
+- Target, focus and boss frames (Forever): the skull of a unit too high
+  to tell no longer has the previous target's level drawn over it (a bug
+  in the latest client update, fixed with either Unit Frames setting).
+
 ## 1.29.1
 
 - Unit Frames (Forever): no more modern circle drawn round the target's
