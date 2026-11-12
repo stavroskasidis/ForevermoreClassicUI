@@ -12,7 +12,9 @@
 	    (<ContentMain>.LevelBackgroundCircle, large white font) in the bottom
 	    corner of the frame. Classic shows it in the frame art's own circle,
 	    where the shared Unit Frames module already anchors the level text.
-	    Target-style frames show the circle again from CheckBattlePet.
+	    Target-style frames show the circle again from CheckBattlePet, and
+	    with it the level text, even over the skull of a unit too high to
+	    tell (a Blizzard bug fixed here with either Unit Frames setting).
 	  * PvP status is a small faction circle (PvpBackgroundIcon: in
 	    PlayerFrameContentMain on the player frame, in
 	    TargetFrameContentContextual on target-style frames; before build
@@ -250,6 +252,33 @@ local function SkinTargetStyleFrame(frame, hasPvP)
 	if hasPvP then
 		ns.Hook(frame, "CheckFaction", ClassicTargetPvPIcon)
 		ClassicTargetPvPIcon(frame)
+	end
+end
+
+-- Blizzard bug (build 70888), fixed whatever the Unit Frames option: Update
+-- runs CheckLevel (skull shown and level hidden for a corpse or a unit too
+-- high to tell), then Camelot's CheckBattlePet, which shows the level text
+-- again for every unit that is not a battle pet, so the previous target's
+-- level is drawn over the skull. The text is hidden again under the skull.
+local function HideLevelUnderSkull(frame)
+	local skull = frame.TargetFrameContent.TargetFrameContentContextual.HighLevelTexture
+	local shown = skull:IsShown()
+	if not IsSecret(shown) and shown then
+		frame.TargetFrameContent.TargetFrameContentMain.LevelText:Hide()
+	end
+end
+
+local function FixSkullLevel(frame)
+	if frame and frame.TargetFrameContent then
+		ns.Hook(frame, "CheckBattlePet", HideLevelUnderSkull)
+	end
+end
+
+FixSkullLevel(TargetFrame)
+FixSkullLevel(FocusFrame)
+if BossTargetFrameContainer and BossTargetFrameContainer.BossTargetFrames then
+	for _, frame in pairs(BossTargetFrameContainer.BossTargetFrames) do
+		FixSkullLevel(frame)
 	end
 end
 
