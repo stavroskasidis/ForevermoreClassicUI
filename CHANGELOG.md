@@ -5,6 +5,11 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.29.1
+
+- Unit Frames (Forever): no more modern circle drawn round the target's
+  level after the latest client update.
+
 ## 1.29.0
 
 - New: a chat notice when a newer version of the addon is out, learned
