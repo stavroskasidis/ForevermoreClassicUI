@@ -5,6 +5,13 @@ in `addon.json` is bumped, add a `## <version>` section here in the same
 commit; a version without a section here gets the list of its commit
 messages instead (see `publish.ps1`).
 
+## 1.29.3
+
+- Minimap: opening the world map with the classic world map button no
+  longer gets the map's icons blocked in combat ("action blocked" errors).
+- Quest Log: no more "action blocked" errors for the quest log micro
+  button in combat.
+
 ## 1.29.2
 
 - Target, focus and boss frames (Forever): the skull of a unit too high
