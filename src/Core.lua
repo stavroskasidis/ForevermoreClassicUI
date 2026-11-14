@@ -220,6 +220,80 @@ function ns.Hook(target, method, fn)
 	return false
 end
 
+-- A secure button laid over one of Blizzard's (or the addon's) buttons.
+-- Anchoring a protected frame to another frame makes that frame protected
+-- too: anchored to the quest log micro button, the quest log's secure cover
+-- got Blizzard's own QuestLogMicroButton:Enable() blocked in combat
+-- whenever EnableMicroButtons ran tainted (2026-11-14). So the cover lives
+-- on UIParent, anchored to nothing but UIParent, and copies the target's
+-- screen rect, strata and level out of combat (a few times a second; a
+-- protected button cannot be moved in combat). While the target is hidden
+-- the cover waits off screen. `hideWhen` (macro conditions) also hides it
+-- in combat through a state driver, for targets Blizzard moves there (the
+-- micro buttons go onto the vehicle and pet battle bars).
+local covers = {}
+local coverTicker
+
+local function SyncCover(cover, target)
+	local left, bottom, width, height
+	if target:IsVisible() then
+		left, bottom, width, height = target:GetRect()
+	end
+	local state = covers[cover]
+	if left then
+		-- In UIParent units, cut to the screen: where a frame reaches past
+		-- the screen's edge the client hit-tests only part of it (the
+		-- classic world map button sticks out at the top of the screen, and
+		-- the cover over it took the mouse only at its right edge, seen
+		-- 2026-11-14).
+		local scale = target:GetEffectiveScale() / cover:GetEffectiveScale()
+		local right, top = (left + width) * scale, (bottom + height) * scale
+		left, bottom = math.max(left * scale, 0), math.max(bottom * scale, 0)
+		right, top = math.min(right, UIParent:GetWidth()), math.min(top, UIParent:GetHeight())
+		width, height = right - left, top - bottom
+		if width <= 0 or height <= 0 then
+			left = nil
+		end
+	end
+	if not left then
+		left, bottom, width, height = -1000, -1000, 1, 1
+	end
+	local strata, level = target:GetFrameStrata(), target:GetFrameLevel() + 5
+	if state.left == left and state.bottom == bottom and state.width == width and state.height == height
+		and state.strata == strata and state.level == level then
+		return
+	end
+	state.left, state.bottom, state.width, state.height, state.strata, state.level =
+		left, bottom, width, height, strata, level
+	cover:ClearAllPoints()
+	cover:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", left, bottom)
+	cover:SetSize(width, height)
+	cover:SetFrameStrata(strata)
+	cover:SetFrameLevel(level)
+end
+
+-- Call out of combat (the cover is a secure button).
+function ns.FollowWithCover(cover, target, hideWhen)
+	covers[cover] = { target = target }
+	SyncCover(cover, target)
+	if hideWhen then
+		RegisterStateDriver(cover, "visibility", hideWhen .. " hide; show")
+	end
+	if not coverTicker then
+		local elapsed = 0
+		coverTicker = CreateFrame("Frame")
+		coverTicker:SetScript("OnUpdate", function(_, delta)
+			elapsed = elapsed + delta
+			if elapsed < 0.2 then return end
+			elapsed = 0
+			if InCombatLockdown() then return end
+			for each, state in pairs(covers) do
+				SyncCover(each, state.target)
+			end
+		end)
+	end
+end
+
 -- Clear anchors and set a single point.
 --   ns.Point(region, "TOPLEFT", x, y)
 --   ns.Point(region, "TOPLEFT", relativeTo, "BOTTOMLEFT", x, y)

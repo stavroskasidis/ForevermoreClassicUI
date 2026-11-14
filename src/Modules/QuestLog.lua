@@ -960,16 +960,16 @@ local function CreateSecureToggle(name, parent)
 	return button
 end
 
--- The micro button's click opens the map; a secure toggle over it (on
--- UIParent, so the micro button does not become protected) opens the log
--- instead and passes the hover on for the tooltip and highlight.
+-- The micro button's click opens the map; a secure toggle over it opens the
+-- log instead and passes the hover on for the tooltip and highlight. It is
+-- not anchored to the micro button (that would make the button protected,
+-- see ns.FollowWithCover), and it steps aside while the micro buttons sit
+-- on the vehicle or pet battle bar (there the button opens the map).
 local function CoverMicroButton()
 	local micro = QuestLogMicroButton
 	if not micro then return end
 	local cover = CreateSecureToggle(nil, UIParent)
-	cover:SetAllPoints(micro)
-	cover:SetFrameStrata(micro:GetFrameStrata())
-	cover:SetFrameLevel(micro:GetFrameLevel() + 5)
+	ns.FollowWithCover(cover, micro, "[vehicleui][overridebar][possessbar][petbattle]")
 	-- Blizzard's tooltip only shows while the micro button itself has the
 	-- mouse; the cover shows the same one (its name and key).
 	cover:SetScript("OnEnter", function()

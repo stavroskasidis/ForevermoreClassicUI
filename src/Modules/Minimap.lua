@@ -556,6 +556,35 @@ end
 
 -- Retail opens the map from the zone text; classic had a square button at
 -- the right end of the header (kept in addition to the zone text click).
+-- The button only draws the art: the click is a secure button over it
+-- (ns.FollowWithCover) clicking the zone text button. A ToggleWorldMap()
+-- from addon code opens the map tainted; the pin pools the map creates on
+-- its first opening then stay tainted, and every pin refresh in combat is
+-- blocked (Button:SetPassThroughButtons(), seen 2026-11-14).
+local function CreateWorldMapCover(button)
+	local zoneButton = MinimapCluster.ZoneTextButton
+	if not zoneButton then return end
+	local cover = CreateFrame("Button", nil, UIParent, "SecureActionButtonTemplate")
+	cover:RegisterForClicks("AnyUp")
+	cover:SetAttribute("useOnKeyDown", false)
+	cover:SetAttribute("type", "click")
+	cover:SetAttribute("clickbutton", zoneButton)
+	cover:SetScript("OnEnter", function()
+		button:LockHighlight()
+		GameTooltip:SetOwner(button, "ANCHOR_LEFT")
+		GameTooltip:SetText(MicroButtonTooltipText(WORLDMAP_BUTTON, "TOGGLEWORLDMAP"), 1, 1, 1)
+		GameTooltip:Show()
+	end)
+	cover:SetScript("OnLeave", function()
+		button:UnlockHighlight()
+		button:SetButtonState("NORMAL")
+		GameTooltip_Hide()
+	end)
+	cover:SetScript("OnMouseDown", function() button:SetButtonState("PUSHED") end)
+	cover:SetScript("OnMouseUp", function() button:SetButtonState("NORMAL") end)
+	ns.FollowWithCover(cover, button)
+end
+
 local function CreateWorldMapButton()
 	if art.worldMap then return end
 	if C_GameRules and Enum.GameRule and Enum.GameRule.WorldMapDisabled
@@ -576,15 +605,9 @@ local function CreateWorldMapButton()
 	highlight:SetSize(28, 28)
 	Point(highlight, "TOPRIGHT", button, "TOPRIGHT", 2, -2)
 
-	button:SetScript("OnClick", function()
-		ToggleWorldMap()
-	end)
-	button:SetScript("OnEnter", function(self)
-		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-		GameTooltip:SetText(MicroButtonTooltipText(WORLDMAP_BUTTON, "TOGGLEWORLDMAP"), 1, 1, 1)
-		GameTooltip:Show()
-	end)
-	button:SetScript("OnLeave", GameTooltip_Hide)
+	button:EnableMouse(false)
+	-- Secure buttons cannot be made in combat (a reload in combat).
+	ns:RunOutOfCombat(function() CreateWorldMapCover(button) end)
 end
 
 ---------------------------------------------------------------------------
